@@ -1,2 +1,2 @@
-# Taxi
-The fastest taxi service
+# telegram-bot-shablon
+Telegram bot qurishlik uchun
