@@ -3,6 +3,7 @@ from asyncio import run
 from aiogram.types import BotCommand
 from aiogram.exceptions import TelegramBadRequest, TelegramForbiddenError
 import admin
+import taxi
 import user
 import logging
 import sys
@@ -52,6 +53,7 @@ async def start():
     dp.shutdown.register(shutdown)
 
     dp.include_router(admin.router)
+    dp.include_router(taxi.router)
     dp.include_router(user.router)
 
     await bot.set_my_commands([
