@@ -63,6 +63,7 @@ async def get_firstname_answer(message : Message, state : FSMContext):
 
 async def get_lastname_answer(message : Message, state : FSMContext):
     await message.answer(f"Your lastname is {message.text}")
+    await state.update_data(lastname = message.text)
     await message.answer("Please send your contact!", reply_markup=get_contact)
     await state.set_state(taxi_states.contact)
 
@@ -79,15 +80,18 @@ async def get_car_model_answer(message : Message, state : FSMContext):
     await state.set_state(taxi_states.car_number)
 
 async def get_car_number_answer(message : Message, state : FSMContext):
+    data = await state.get_data()
+
+    
     await message.answer(f"Your car number is {message.text}!")
     await state.update_data(car_number = message.text)
     await message.answer("""Please make sure your all information is right, and confirm!""", reply_markup=confirm)
+    await message.answer(f"{data}")
     await state.set_state(taxi_states.confirm)
 
 async def confirm_answer(message : Message, state : FSMContext):
     data = await state.get_data()
 
-    await message.answer(f"{data}")
     """
     I need to write code to save all information about a taxi driver using database.
     """
