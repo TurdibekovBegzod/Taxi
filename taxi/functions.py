@@ -10,11 +10,18 @@ from .keyboards import (
 
 from aiogram.fsm.context import FSMContext
 from .states import taxi_states
+from user.keyboards import passenger_keyboard
+from user.states import user_states
 from aiogram.types.reply_keyboard_remove import ReplyKeyboardRemove
 
 
 async def start_command_answer(message : Message, bot : Bot, state : FSMContext):
     await message.answer(text = "Welcome to our bot, user!")
+    # 2. Til haqidagi eslatma 
+    await message.answer(
+        text="Agar tilni o'zgartirmoqchi bo'lsangiz /language ni bosing.\n"
+             "Aks holda davom eting (O'zbek tilida)."
+    )
     await message.answer(text = "Choose your role!", reply_markup=show_role_buttons)
     await state.clear() # clear the state
     await state.set_state(taxi_states.choosing_role) # turn on the <choosing_role> state in taxi_states
@@ -43,9 +50,18 @@ async def to_choose_a_role_answer(message : Message, state : FSMContext):
         await message.answer(text = """Driver, you're not registered yet!
                              \nPlease sign up!""",
                              reply_markup=sign_up)
+        await state.set_state(taxi_states.firstname)
+    else:
+        user_lang = "uz"  # Bu yerda foydalanuvchining tanlagan tilini olishingiz mumkin
+        await message.answer(
+            "choose.option",  # Masalan, "Quyidagi bo‘limlardan birini tanlang:"
+            reply_markup=passenger_keyboard(user_lang)
+        )
+        await state.set_state(user_states.choose_option)
 
     await state.update_data(role = message.text)
-    await state.set_state(None) # turn off the state
+    # await state.set_state(None) # turn off the state
+    # await state.set_state(user_states.choose_option)
 
 async def sign_up_answer(message : Message, state : FSMContext):
     data = await state.get_data()

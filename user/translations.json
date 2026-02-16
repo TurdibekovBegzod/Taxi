@@ -1,0 +1,99 @@
+{
+  "language.choose": {
+    "uz": "Tilni tanlang",
+    "ru": "Выберите язык"
+  },
+  "language.changed.uz": {
+    "uz": "Til o‘zgartirildi 🇺🇿",
+    "ru": "Язык изменён 🇺🇿"
+  },
+  "language.changed.ru": {
+    "uz": "Til o‘zgartirildi 🇷🇺",
+    "ru": "Язык изменён 🇷🇺"
+  },
+
+  "role.passenger": {
+    "uz": "Yo'lovchi",
+    "ru": "Пассажир"
+  },
+  "role.driver": {
+    "uz": "Haydovchi",
+    "ru": "Водитель"
+  },
+
+  "choose.option":{
+    "uz": "Quyidagi bo‘limlardan birini tanlang:",
+    "ru": "vgsfb"
+  },
+
+  "passenger.travel": {
+    "uz": "Sayohat", 
+    "ru": "Поездка"},
+
+  "passenger.my_requests": {
+    "uz": "Mening so'rovlarim", 
+    "ru": "Мои запросы"},
+
+  "passenger.complaints": {
+    "uz": "Shikoyatlar va takliflar", 
+    "ru": "Жалобы и предложения"},
+
+  "back": {
+    "uz": "Orqaga qaytish", 
+    "ru": "Назад"},
+
+  "input.name": {
+    "uz": "Ismingizni kiriting",
+    "ru": "Введите ваше имя"
+  },
+  "input.surname": {
+    "uz": "Familiyangizni kiriting",
+    "ru": "Введите вашу фамилию"
+  },
+  "input.phone": {
+    "uz": "Raqamingizni kiriting",
+    "ru": "Введите ваш номер телефона"
+  },
+  "input.from": {
+    "uz": "Qayerdan",
+    "ru": "Откуда"
+  },
+  "input.to": {
+    "uz": "Qayerga",
+    "ru": "Куда"
+  },
+  "input.location": {
+    "uz": "Iltimos, lokatsiyangizni tashlang",
+    "ru": "Пожалуйста, отправьте вашу локацию"
+  },
+  "input.datetime": {
+    "uz": "Qachon ketmoqchisiz? Sana va soatini kiriting",
+    "ru": "Когда вы собираетесь ехать? Введите дату и время"
+  },
+  "input.people_count": {
+    "uz": "Nechta odam ketadi?",
+    "ru": "Сколько человек поедет?"
+  },
+
+  "request.show": {
+    "uz": "So'rovni ko‘rsatish",
+    "ru": "Показать заявку"
+  },
+  "request.clear": {
+    "uz": "So'rovni tozalash",
+    "ru": "Очистить заявку"
+  },
+
+  "navigation.next": {
+    "uz": "Keyingi",
+    "ru": "Следующая"
+  },
+  "navigation.previous": {
+    "uz": "Oldingi",
+    "ru": "Предыдущая"
+  },
+  "navigation.back": {
+    "uz": "Orqaga qaytish",
+    "ru": "Назад"
+  }
+}
