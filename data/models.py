@@ -36,24 +36,24 @@ class Condition(Base):
     def __repr__(self):
         return f"<Condition id={self.id} name={self.name!r}>"
 
-class Request(Base):
-    __tablename__ = "requests"
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    from_region = Column(Integer, ForeignKey("regions.id"))
-    to_region = Column(Integer, ForeignKey("regions.id"))
-    date = Column(Date)
-    number_of_people = Column(Integer)
-    condition_id = Column(Integer, ForeignKey("condition.id"))
-    def __repr__(self):
-        return f"<Request id={self.id} user_id={self.user_id} from_region={self.from_region} to_region={self.to_region} date={self.date} number_of_people={self.number_of_people} condition_id={self.condition_id}>"
+# class Request(Base):
+#     __tablename__ = "requests"
+#     id = Column(Integer, primary_key=True)
+#     user_id = Column(Integer, ForeignKey("users.id"))
+#     from_region = Column(Integer, ForeignKey("regions.id"))
+#     to_region = Column(Integer, ForeignKey("regions.id"))
+#     date = Column(Date)
+#     number_of_people = Column(Integer)
+#     condition_id = Column(Integer, ForeignKey("condition.id"))
+#     def __repr__(self):
+#         return f"<Request id={self.id} user_id={self.user_id} from_region={self.from_region} to_region={self.to_region} date={self.date} number_of_people={self.number_of_people} condition_id={self.condition_id}>"
 
-class Complaint(Base):
-    __tablename__ = "complaints"
-    id = Column(Integer, primary_key=True)
-    info = Column(String)
-    def __repr__(self):
-        return f"<Complaint id={self.id} info={self.info!r}>"
+# class Complaint(Base):
+#     __tablename__ = "complaints"
+#     id = Column(Integer, primary_key=True)
+#     info = Column(String)
+#     def __repr__(self):
+#         return f"<Complaint id={self.id} info={self.info!r}>"
 
 class Taxi(Base):
     __tablename__ = "user_taxi"

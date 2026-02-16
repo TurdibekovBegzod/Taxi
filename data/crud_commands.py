@@ -12,15 +12,12 @@ except Exception:
 
 # ===== GENERIC CRUD FUNCTIONS =====
 
-def insert(model, **data):
+def add(model, **data):
     obj = model(**data)
     session.add(obj)
     session.commit()
     return obj
 
-
-def create(model, **data):
-    return insert(model, **data)
 
 
 def update(model, filters: dict, updates: dict):
@@ -40,9 +37,13 @@ def delete(model, **filters):
         return True
     return False
 
+def get(): # bitta odam olinsin.
+    pass
+
 def create_base():
     """Base yaratish uchun funksiya - agar kerak bo'lsa"""
     return _create_base()
+
 def get_all_models_user():
     models = {
         "User": User,
@@ -53,7 +54,9 @@ def get_all_models_user():
         "Taxi": Taxi,
         "User_taxi": User_taxi}
     return session.query(User).all(), session.query(Region).all(), session.query(Condition).all(), session.query(Request).all(), session.query(Complaint).all(), session.query(Taxi).all(), session.query(User_taxi).all()
-create_base()
-# Debugging uchun o'zlashtirma
-ism=create(User, fullname="John Doeddssa", phone=1112345678901, telegram_id=119876543211)
-print(get_all_models_user())
+
+if __name__ == "__main__":
+    create_base()
+    # Debugging uchun o'zlashtirma
+    ism=add(User, fullname="John Doeddssa", phone=1112345678901, telegram_id=119876543211)
+    print(get_all_models_user())

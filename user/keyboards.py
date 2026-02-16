@@ -21,8 +21,7 @@ def passenger_keyboard(user_lang: str):
             [
                 KeyboardButton(text=t(user_lang, "passenger.travel")),
                 KeyboardButton(text=t(user_lang, "passenger.my_requests")),
-                KeyboardButton(text=t(user_lang, "passenger.complaints")),
-                KeyboardButton(text=t(user_lang, "back"))
+                KeyboardButton(text=t(user_lang, "passenger.complaints"))
             ]
         ],
         resize_keyboard=True
