@@ -9,6 +9,7 @@ import logging
 import sys
 import os
 from dotenv import load_dotenv
+from data import models 
 
 log_format = "%(asctime)s - %(levelname)s - %(message)s"
 date_format = "%Y-%m-%d %H:%M:%S"
@@ -49,6 +50,7 @@ async def shutdown(bot: Bot):
         logger.error(f"Shutdown message error: {e}")
 
 async def start():
+    models.create_base()
     dp.startup.register(startup)
     dp.shutdown.register(shutdown)
 

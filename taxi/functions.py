@@ -13,6 +13,7 @@ from .states import taxi_states
 from user.keyboards import passenger_keyboard
 from user.states import user_states
 from aiogram.types.reply_keyboard_remove import ReplyKeyboardRemove
+from data import crud_commands, models
 
 
 async def start_command_answer(message : Message, bot : Bot, state : FSMContext):
@@ -43,6 +44,10 @@ async def to_choose_a_role_answer(message : Message, state : FSMContext):
     await message.answer(text = f"Your role is {message.text}!")
 
     if message.text == "Driver":
+        driver = crud_commands.get(models.Taxi, {"telegram_id" : message.from_user.id})
+        if driver:
+            await message.answer(text = f"Hello, {driver.firstname}👋", reply_markup=taxi_profile)
+            return
         """
         I need to write code to check the taxi driver is available in our database!
         """
@@ -102,15 +107,17 @@ async def get_car_number_answer(message : Message, state : FSMContext):
     await message.answer(f"Your car number is {message.text}!")
     await state.update_data(car_number = message.text)
     await message.answer("""Please make sure your all information is right, and confirm!""", reply_markup=confirm)
-    await message.answer(f"{data}")
+    
     await state.set_state(taxi_states.confirm)
 
 async def confirm_answer(message : Message, state : FSMContext):
     data = await state.get_data()
-
-    """
-    I need to write code to save all information about a taxi driver using database.
-    """
+    data['telegram_id'] = message.from_user.id
+    data.pop('role', None)
+    crud_commands.add(
+        model=models.Taxi, 
+        data=data
+    )
 
     await message.answer("Your all information is saved ✅!", reply_markup=taxi_profile)
     await state.clear()
