@@ -45,13 +45,11 @@ async def to_choose_a_role_answer(message : Message, state : FSMContext):
 
     if message.text == "Driver":
         driver = crud_commands.get(models.Taxi, {"telegram_id" : message.from_user.id})
+        
         if driver:
             await message.answer(text = f"Hello, {driver.firstname}👋", reply_markup=taxi_profile)
-            return
-        """
-        I need to write code to check the taxi driver is available in our database!
-        """
-
+            return # Agar taxi ro'yxatdan o'tgan bo'lsa, keyingi kodlar ishlamasligi uchun return qilamiz
+        
         await message.answer(text = """Driver, you're not registered yet!
                              \nPlease sign up!""",
                              reply_markup=sign_up)

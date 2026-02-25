@@ -38,7 +38,13 @@ confirm = ReplyKeyboardMarkup(
 taxi_profile = ReplyKeyboardMarkup(
     keyboard=[
         [
-            KeyboardButton(text = "Info"), KeyboardButton(text = "Suggestions and comp/s")
+            KeyboardButton(text = "Info")
+        ],
+        [
+            KeyboardButton(text = "Channel")
+        ],
+        [
+            KeyboardButton(text = "Suggestions and comp/s")
         ]
     ],
     resize_keyboard=True
