@@ -22,7 +22,7 @@ sign_up = ReplyKeyboardMarkup(
 get_contact = ReplyKeyboardMarkup(
     keyboard=[
         [
-            KeyboardButton(text = "Get contact", request_contact=True)
+            KeyboardButton(text = "raqam yuborish", request_contact=True)
         ]
     ],
     resize_keyboard=True
@@ -38,7 +38,7 @@ confirm = ReplyKeyboardMarkup(
 taxi_profile = ReplyKeyboardMarkup(
     keyboard=[
         [
-            KeyboardButton(text = "Info"), KeyboardButton(text = "Suggestions and comp/s")
+            KeyboardButton(text = "Info"), KeyboardButton(text = "Update info")
         ]
     ],
     resize_keyboard=True

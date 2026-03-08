@@ -19,8 +19,12 @@ def passenger_keyboard(user_lang: str):
     keyboard = ReplyKeyboardMarkup(
         keyboard=[
             [
-                KeyboardButton(text=t(user_lang, "passenger.travel")),
-                KeyboardButton(text=t(user_lang, "passenger.my_requests")),
+                KeyboardButton(text=t(user_lang, "passenger.travel"))
+            ],
+            [
+                KeyboardButton(text="Channel")
+            ],
+            [
                 KeyboardButton(text=t(user_lang, "passenger.complaints"))
             ]
         ],

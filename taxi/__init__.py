@@ -9,7 +9,15 @@ from .functions import (
                         get_car_model_answer,
                         get_car_number_answer,
                         confirm_answer,
-                        change_role_command_answer)
+                        change_role_command_answer,
+                        info_answer,
+                        update_info_answer,
+                        get_new_firstname_answer,
+                        get_new_lastname_answer,
+                        get_new_phone_answer,
+                        get_new_car_model_answer,
+                        get_new_car_number_answer,
+                        confirm_edit_answer)
 from aiogram.filters import CommandStart, Command
 from .states import taxi_states
 
@@ -29,6 +37,17 @@ router.message.register(get_contact_answer, taxi_states.contact)
 router.message.register(get_car_model_answer, taxi_states.car_model)
 router.message.register(get_car_number_answer, taxi_states.car_number)
 router.message.register(confirm_answer, taxi_states.confirm, F.text == "Confirm")
+
+# show info and update handlers
+router.message.register(info_answer, F.text == "Info")
+router.message.register(update_info_answer, F.text == "Update info")
+# edit sequence handlers
+router.message.register(get_new_firstname_answer, taxi_states.edit_firstname)
+router.message.register(get_new_lastname_answer, taxi_states.edit_lastname)
+router.message.register(get_new_phone_answer, taxi_states.edit_phone)
+router.message.register(get_new_car_model_answer, taxi_states.edit_car_model)
+router.message.register(get_new_car_number_answer, taxi_states.edit_car_number)
+router.message.register(confirm_edit_answer, taxi_states.edit_confirm, F.text == "Confirm")
 
 # example to connect functions
 # router.message.register(function_name, filters, commands)
