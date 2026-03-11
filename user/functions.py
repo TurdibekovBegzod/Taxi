@@ -166,15 +166,17 @@ async def confirm_send(message: Message, state: FSMContext, bot: Bot):
         reply_markup=passenger_keyboard("uz")
     )
 
-    await state.clear()
+    await state.set_state(user_states.choose_option)
 
 
 async def cancel_order(message: Message, state: FSMContext):
-    await state.clear()
+    
     await message.answer(
         "❌ Buyurtma bekor qilindi.",
         reply_markup=passenger_keyboard("uz")
     )
+
+    await state.set_state(user_states.choose_option)
 
 async def edit_order(message: Message, state: FSMContext):
     await message.answer(
