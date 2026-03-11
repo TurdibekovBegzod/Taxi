@@ -45,3 +45,32 @@ def place_keyboard(user_lang: str, type: str = "from"):
             InlineKeyboardButton(text="Xorazm", callback_data=f"{prefix}_Xorazm")
         ]
     ])
+
+# ==================================================
+# ==========================================================
+# CONFIRM KEYBOARD
+def confirm_keyboard(user_lang: str):
+    return ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="✅ Yuborish")],
+            [KeyboardButton(text="✏️ Tahrirlash")],
+            [KeyboardButton(text="❌ Bekor qilish")]
+        ],
+        resize_keyboard=True
+    )
+
+# ====================
+def edit_keyboard(user_lang: str):
+    return ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="Ism"), KeyboardButton(text="Familiya")],
+            [KeyboardButton(text="Qayerdan"), KeyboardButton(text="Qayerga")],
+            [KeyboardButton(text="Lokatsiya")],
+            [KeyboardButton(text="Sana va vaqt"),KeyboardButton(text="Telefon")],
+            [KeyboardButton(text="Odamlar soni")],
+            [KeyboardButton(text="⬅️ Orqaga")]
+        ],
+        resize_keyboard=True
+    )
+
+

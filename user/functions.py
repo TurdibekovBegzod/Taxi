@@ -8,6 +8,14 @@ from taxi.states import taxi_states
 import os
 
 
+from user.keyboards import (
+    language_keyboard,
+    passenger_keyboard,
+    confirm_keyboard,
+    edit_keyboard
+)
+from user.i18n import t
+
 from user.keyboards import language_keyboard, passenger_keyboard
 from user.i18n import t
 
@@ -65,14 +73,42 @@ async def process_phone(message: Message, state: FSMContext):
 # ======================
 # 6. Lokatsiya qabul qilish
 async def process_location(message: Message, state: FSMContext):
-    if not message.location:
-        await message.answer("📍 Iltimos lokatsiyangizni yuboring!")
-        return
-    await state.update_data(user_location=message.location)
-    await message.answer("Qachon ketmoqchisiz? Sana va vaqtni kiriting (YYYY-MM-DD HH:MM):")
-    await state.set_state(user_states.user_time)
 
-# ======================
+    # agar lokatsiya yuborilmasa
+    if not message.location:
+        await message.answer("📍 Iltimos lokatsiyani tugma orqali yuboring!")
+        return
+
+    data = await state.get_data()
+    editing_field = data.get("editing_field")
+
+    # =====================
+    # locatsiya tahrirlansa
+    if editing_field == "user_location":
+
+        await state.update_data(
+            user_location=message.location
+        )
+
+        # editing flagni tozalash
+        await state.update_data(editing_field=None)
+
+        # qayta summary ko'rsatish
+        await show_order_summary(message, state)
+
+        return
+
+    # =====================
+    # ODDIY BUYURTMA JARAYONI
+    await state.update_data(
+        user_location=message.location
+    )
+
+    await message.answer(
+        "🕒 Qachon ketmoqchisiz?\nSana va vaqtni kiriting (YYYY-MM-DD HH:MM):"
+    )
+
+    await state.set_state(user_states.user_time)# ======================
 # 7. Sana va vaqt qabul qilish
 async def process_time(message: Message, state: FSMContext):
     await state.update_data(user_time=message.text)
@@ -81,9 +117,7 @@ async def process_time(message: Message, state: FSMContext):
 
 # ======================
 # 8. Odamlar soni qabul qilish va yakunlash
-async def process_people(message: Message, state: FSMContext, bot: Bot):
-    await state.update_data(user_people=message.text)
-
+async def show_order_summary(message: Message, state: FSMContext):
     data = await state.get_data()
     summary = (
         f"✅ So'rovingiz qabul qilindi!\n\n"
@@ -94,20 +128,201 @@ async def process_people(message: Message, state: FSMContext, bot: Bot):
         f"Qayerga: {data.get('user_place2')}\n"
         f"Sana va vaqt: {data.get('user_time')}\n"
         f"Odamlar soni: {data.get('user_people')}\n\n"
-        f"Haydovchilarimiz siz bilan bog'lanadi 🚖"
     )
 
-    await message.answer(summary, reply_markup=passenger_keyboard("uz"))
+    await message.answer(summary, reply_markup=confirm_keyboard("uz"))
+    await state.set_state(user_states.confirm_order)
 
-    # Adminga jo'natish
+
+async def process_people(message: Message, state: FSMContext):
+    await state.update_data(user_people=message.text)
+    await show_order_summary(message, state)
+
+
+async def confirm_send(message: Message, state: FSMContext, bot: Bot):
+    data = await state.get_data()
+
+    summary = (
+        f"🚖 Yangi so'rov:\n\n"
+        f"Ism: {data.get('user_firstname', '')}\n"
+        f"Familiya: {data.get('user_lastname', '')}\n"
+        f"Telefon: {data.get('user_phone', '')}\n"
+        f"Qayerdan: {data.get('user_place1', '')}\n"
+        f"Qayerga: {data.get('user_place2', '')}\n"
+        f"Sana va vaqt: {data.get('user_time', '')}\n"
+        f"Odamlar soni: {data.get('user_people', '')}"
+    )
+
     SUPERADMIN = int(os.getenv("SUPERADMIN"))
-    await bot.send_message(SUPERADMIN, f"Yangi so'rov:\n{summary}")
+    await bot.send_message(SUPERADMIN, summary)
+
+    # await send_order_to_group(bot, state)
+    from .functions import send_order_to_channel
+
+    await send_order_to_channel(bot, state)
+
+    await message.answer(
+        "✅ So‘rovingiz yuborildi.\n\nHaydovchilarimiz siz bilan bog'lanadi 🚖",
+        reply_markup=passenger_keyboard("uz")
+    )
 
     await state.clear()
 
 
+async def cancel_order(message: Message, state: FSMContext):
+    await state.clear()
+    await message.answer(
+        "❌ Buyurtma bekor qilindi.",
+        reply_markup=passenger_keyboard("uz")
+    )
+
+async def edit_order(message: Message, state: FSMContext):
+    await message.answer(
+        "Qaysi ma'lumotni o‘zgartirmoqchisiz?",
+        reply_markup=edit_keyboard("uz")
+    )
+    await state.set_state(user_states.edit_field)
 
 
+async def choose_edit_field(message: Message, state: FSMContext):
+    from .keyboards import place_keyboard
+    from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
+
+    if message.text == "⬅️ Orqaga":
+        await show_order_summary(message, state)
+        return
+
+    # QAYERDAN
+    if message.text == "Qayerdan":
+        await state.update_data(editing_field="user_from")
+
+        await message.answer(
+            "Jo'nash viloyatini tanlang:",
+            reply_markup=place_keyboard("uz", "from")
+        )
+
+        await state.set_state(user_states.user_place1)
+        return
+
+    # QAYERGA
+    if message.text == "Qayerga":
+        await state.update_data(editing_field="user_to")
+
+        await message.answer(
+            "Borish viloyatini tanlang:",
+            reply_markup=place_keyboard("uz", "to")
+        )
+
+        await state.set_state(user_states.user_place2)
+        return
+
+    # LOKATSIYA
+    if message.text == "Lokatsiya":
+        location_keyboard = ReplyKeyboardMarkup(
+            keyboard=[
+                [KeyboardButton(text="📍 Lokatsiya yuborish", request_location=True)]
+            ],
+            resize_keyboard=True
+        )
+
+        await state.update_data(editing_field="user_location")
+
+        await message.answer(
+            "📍 Lokatsiyangizni yuboring:",
+            reply_markup=location_keyboard
+        )
+
+        await state.set_state(user_states.user_location)
+        return
+    
+    field_map = {
+        "Ism": ("user_firstname", "Yangi ismingizni kiriting:"),
+        "Familiya": ("user_lastname", "Yangi familiyangizni kiriting:"),
+        "Telefon": ("user_phone", "Yangi telefon raqamingizni kiriting:"),
+        "Sana va vaqt": ("user_time", "Yangi sana va vaqtni kiriting (YYYY-MM-DD HH:MM):"),
+        "Odamlar soni": ("user_people", "Yangi odamlar sonini kiriting:")
+    }
+
+    if message.text not in field_map:
+        await message.answer("Iltimos, tugmalardan birini tanlang.")
+        return
+
+    field_name, ask_text = field_map[message.text]
+
+    await state.update_data(editing_field=field_name)
+    await message.answer(
+        ask_text,
+        reply_markup=ReplyKeyboardRemove()
+    )
+
+    await state.set_state(user_states.edit_value)
+async def save_edited_value(message: Message, state: FSMContext,bot:Bot):
+    data = await state.get_data()
+    editing_field = data.get("editing_field")
+
+    if not editing_field:
+        await message.answer("Xatolik yuz berdi. Qaytadan urinib ko‘ring.")
+        await state.clear()
+        return
+
+    if editing_field == "user_location":
+        if not message.location:
+            await message.answer("📍 Iltimos, lokatsiyani tugma orqali yuboring.")
+            return
+
+        await state.update_data(user_location=message.location)
+        await show_order_summary(message, state)
+        return
+
+    await state.update_data(**{editing_field: message.text})
+    await show_order_summary(message, state)
+
+CHANNEL_ID = "@taxi_test_uz"
+from aiogram import Bot
+from aiogram.fsm.context import FSMContext
+
+CHANNEL_ID = "@taxi_test_uz"
+async def send_order_to_channel(bot: Bot, state: FSMContext):
+    data = await state.get_data()
+
+    location = data.get("user_location")
+
+    map_link = ""
+    if location:
+        map_link = f"https://maps.google.com/?q={location.latitude},{location.longitude}"
+
+    text = f"""
+🚕 YANGI BUYURTMA
+
+👤 Ism: {data.get('user_firstname')}
+📞 Telefon: {data.get('user_phone')}
+
+📍 Qayerdan: {data.get('user_place1')}
+📍 Qayerga: {data.get('user_place2')}
+
+👥 Odamlar: {data.get('user_people')}
+🕒 Vaqt: {data.get('user_time')}
+
+📍 Lokatsiya:
+{map_link}
+"""
+
+    await bot.send_message(CHANNEL_ID, text)
+
+    if location:
+        await bot.send_location(
+            CHANNEL_ID,
+            latitude=location.latitude,
+            longitude=location.longitude
+        )
+
+        
+    # # Adminga jo'natish
+    # SUPERADMIN = int(os.getenv("SUPERADMIN"))
+    # await bot.send_message(SUPERADMIN, f"Yangi so'rov:\n{summary}")
+
+    # await state.clear()
+     
 # ==============================================
 # Endi Mening so'rovlarim qismini yozamiz
 
