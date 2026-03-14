@@ -44,7 +44,7 @@ async def to_choose_a_role_answer(message : Message, state : FSMContext):
     await message.answer(text = f"Your role is {message.text}!")
 
     if message.text == "Driver":
-        driver = crud_commands.get(models.Taxi, {"telegram_id" : message.from_user.id})
+        driver = await crud_commands.get(models.Taxi, {"telegram_id" : message.from_user.id})
         
         if driver:
             # already registered; clear state so subsequent commands like Info/Update work
@@ -114,7 +114,7 @@ async def confirm_answer(message : Message, state : FSMContext):
     data = await state.get_data()
     data['telegram_id'] = message.from_user.id
     data.pop('role', None)
-    crud_commands.add(
+    await crud_commands.add(
         model=models.Taxi, 
         data=data
     )
@@ -128,7 +128,7 @@ async def confirm_answer(message : Message, state : FSMContext):
 async def info_answer(message: Message, state: FSMContext):
     """Show current driver information. """
     await state.clear()
-    driver = crud_commands.get(models.Taxi, {"telegram_id": message.from_user.id})
+    driver = await crud_commands.get(models.Taxi, {"telegram_id": message.from_user.id})
     if not driver:
         await message.answer("Siz ro'yxatdan o'tmagan ekansiz. Iltimos avval Sign up ni tanlang.")
         return
@@ -149,7 +149,7 @@ async def info_answer(message: Message, state: FSMContext):
 async def update_info_answer(message: Message, state: FSMContext):
     """Start full-profile edit sequence."""
     await state.clear()
-    driver = crud_commands.get(models.Taxi, {"telegram_id": message.from_user.id})
+    driver = await crud_commands.get(models.Taxi, {"telegram_id": message.from_user.id})
     if not driver:
         await message.answer("Siz ro'yxatdan o'tmagan ekansiz. Iltimos avval Sign up ni tanlang.")
         return
@@ -195,7 +195,7 @@ async def get_new_car_number_answer(message: Message, state: FSMContext):
 
 async def confirm_edit_answer(message: Message, state: FSMContext):
     data = await state.get_data()
-    driver = crud_commands.get(models.Taxi, {"telegram_id": message.from_user.id})
+    driver = await crud_commands.get(models.Taxi, {"telegram_id": message.from_user.id})
     if not driver:
         await message.answer("Tizimda xatolik yuz berdi, qayta urinib ko'ring.")
         await state.clear()
@@ -208,7 +208,7 @@ async def confirm_edit_answer(message: Message, state: FSMContext):
             update_data[field] = data[field]
 
     if update_data:
-        crud_commands.update(models.Taxi, {'telegram_id': message.from_user.id}, update_data)
+        await crud_commands.update(models.Taxi, {'telegram_id': message.from_user.id}, update_data)
 
     await message.answer("Sizning ma'lumotlaringiz muvaffaqiyatli yangilandi ✅", reply_markup=taxi_profile)
     await state.clear()

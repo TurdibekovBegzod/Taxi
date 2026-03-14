@@ -1,13 +1,19 @@
 from sqlalchemy import Float, create_engine, Column, Integer, String, BigInteger, Date, ForeignKey, UUID
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 import uuid
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 
 # Centralized DB config
 DATABASE_URL = "sqlite+aiosqlite:///taxi.db"
 
-engine = create_engine(DATABASE_URL, echo=False)
-Session = sessionmaker(bind=engine)
-session = Session()
+engine = create_async_engine(DATABASE_URL, echo=False)
+
+session = sessionmaker(
+    bind=engine,
+    class_=AsyncSession,
+    expire_on_commit=False
+)
+
 
 class Base(DeclarativeBase):
     pass
@@ -41,7 +47,7 @@ class Message(Base):
     uid = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
     message = Column(String)
 
-def create_base():
-    """Convenience helper to create all tables (useful for local quick starts).
-    Prefer using Alembic migrations in production."""
-    Base.metadata.create_all(engine)
+async def create_base():
+    engine = create_async_engine("sqlite+aiosqlite:///./taxi.db", echo=True)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)

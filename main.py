@@ -50,7 +50,7 @@ async def shutdown(bot: Bot):
         logger.error(f"Shutdown message error: {e}")
 
 async def start():
-    models.create_base()
+    await models.create_base()
     dp.startup.register(startup)
     dp.shutdown.register(shutdown)
 
