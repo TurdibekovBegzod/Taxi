@@ -1,5 +1,7 @@
 # Here you need to cerate you keyboards
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from user.i18n import t
 
 def language_keyboard():
     return InlineKeyboardMarkup(
@@ -12,8 +14,7 @@ def language_keyboard():
     )
 
 
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
-from user.i18n import t
+
 
 def passenger_keyboard(user_lang: str):
     keyboard = ReplyKeyboardMarkup(
