@@ -1,6 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy import delete
 from data.models import engine # sizning async_engine import qilinishi kerak
+from data.models import Order
+
 
 async def add(model, data: dict):
     async with AsyncSession(engine) as session:
@@ -36,3 +39,33 @@ async def get(model, filters: dict):
         result = await session.execute(select(model).filter_by(**filters))
         obj = result.scalar_one_or_none()
         return obj
+    
+async def create_order(message : str, user_id) -> Order:
+     async with AsyncSession(engine) as session:
+        new_order = Order()
+        new_order.message = message
+        new_order.user_id = user_id
+
+        session.add(new_order)
+
+        await session.commit()
+        await session.refresh(new_order)
+        return new_order
+     
+
+
+async def delete_order(message_uid):
+    async with AsyncSession(engine) as session:
+        result = await session.execute(
+            select(Order).where(Order.uid == message_uid)
+        )
+        order = result.scalar_one_or_none()
+
+        if order:
+            await session.delete(order)
+            await session.commit()
+            return True
+        
+        return False
+
+

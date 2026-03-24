@@ -42,10 +42,11 @@ class Taxi(Base):
     def __repr__(self):
         return f"<Taxi id={self.id} fullname={self.fullname!r} nomer={self.nomer} car_model={self.car_model!r} car_nomer={self.car_nomer} telegram_id={self.telegram_id}>"
 
-class Message(Base):
-    __tablename__ = "message"
+class Order(Base):
+    __tablename__ = "orders"
     uid = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
     message = Column(String)
+    user_id = Column(String)
 
 async def create_base():
     engine = create_async_engine("sqlite+aiosqlite:///./taxi.db", echo=True)

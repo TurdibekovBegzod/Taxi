@@ -19,3 +19,5 @@ class user_states(StatesGroup):
     confirm_order = State() #
     edit_field = State()
     edit_value = State()
+
+    complaint_text = State()

@@ -16,14 +16,27 @@ from .functions import (
                         cancel_order,
                         edit_order,
                         choose_edit_field,
-                        save_edited_value
+                        save_edited_value,
+                        channel_handler,
+                        complaints_start,
+                        complaints_handler
 
 )
 
 from .callback import (
                         language_callback,
                         process_place1,
-                        process_place2
+                        process_place2,
+                        accept_order,
+                        contact_passenger,
+                        passenger_yes,
+                        passenger_no,
+                        driver_yes,
+                        driver_no,
+                        confirm_order,
+                        client_yes,
+                        client_no
+
                         ) 
 
 from aiogram.filters import CommandStart, Command
@@ -63,3 +76,20 @@ router.message.register(edit_order,StateFilter(user_states.confirm_order),F.text
 router.message.register(cancel_order,StateFilter(user_states.confirm_order),F.text=="❌ Bekor qilish")
 router.message.register(choose_edit_field,StateFilter(user_states.edit_field))
 router.message.register(save_edited_value,StateFilter(user_states.edit_value))
+router.callback_query.register(accept_order, F.data.startswith("accept_"))
+router.callback_query.register(contact_passenger, F.data.startswith("contact_"))
+
+router.callback_query.register(passenger_yes, F.data.startswith("passenger_yes_"))
+router.callback_query.register(passenger_no, F.data.startswith("passenger_no_"))
+
+router.callback_query.register(driver_yes, F.data.startswith("driver_yes_"))
+router.callback_query.register(driver_no, F.data.startswith("driver_no_"))
+router.message.register(channel_handler, F.text == "Channel")
+router.message.register(complaints_start, lambda msg: msg.text == "Shikoyatlar va takliflar")
+
+router.message.register(complaints_handler,StateFilter(user_states.complaint_text))
+
+
+router.callback_query.register(confirm_order, F.data.startswith("confirm_"))
+router.callback_query.register(client_yes, F.data.startswith("client_yes_"))
+router.callback_query.register(client_no, F.data.startswith("client_no_"))

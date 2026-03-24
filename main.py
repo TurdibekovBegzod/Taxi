@@ -37,6 +37,9 @@ if not SUPERADMIN:
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 
+from user.my_scheduler import scheduler
+
+
 async def startup(bot: Bot):
     try:
         await bot.send_message(chat_id=int(SUPERADMIN), text="Bot ishga tushdi! ✅")
@@ -49,7 +52,8 @@ async def shutdown(bot: Bot):
     except (TelegramBadRequest, TelegramForbiddenError) as e:
         logger.error(f"Shutdown message error: {e}")
 
-async def start():
+async def main():
+    scheduler.start()
     await models.create_base()
     dp.startup.register(startup)
     dp.shutdown.register(shutdown)
@@ -70,4 +74,4 @@ async def start():
         await bot.session.close()
 
 if __name__ == "__main__":
-    run(start())
+    run(main())

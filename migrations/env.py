@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 
 
-from data.models import Taxi, Base, Message, DATABASE_URL
+from data.models import Taxi, Base, Order, DATABASE_URL
 
 database_url = DATABASE_URL
 

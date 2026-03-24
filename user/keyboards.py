@@ -75,3 +75,20 @@ def edit_keyboard(user_lang: str):
     )
 
 
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+
+def receive(order_id):
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="✅ Qabul qilish",
+                    callback_data=f"accept_{order_id}"
+                ),
+                InlineKeyboardButton(
+                    text="📞 Bog'lanish",
+                    callback_data=f"contact_{order_id}"
+                )
+            ]
+        ]
+    )

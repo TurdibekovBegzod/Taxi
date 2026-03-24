@@ -5,6 +5,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types.reply_keyboard_remove import ReplyKeyboardRemove
 from .states import user_states
 from taxi.states import taxi_states
+from data.crud_commands import create_order
 import os
 
 
@@ -58,13 +59,25 @@ async def process_firstname(message: Message, state: FSMContext):
 # 2. Familiya qabul qilish
 async def process_lastname(message: Message, state: FSMContext):
     await state.update_data(user_lastname=message.text)
-    await message.answer("Raqamingizni kiriting:")
+    await message.answer("Telefon raqamingizni  kiriting\nNamuna: 995673412 ")
     await state.set_state(user_states.user_phone)
+
+import re
+
+def phone_number_answer(user_phone):
+    # Regex qoidasi
+    uz_phone_regex = r'\d{9}$'
+    # Tekshirish
+    return bool(re.match(uz_phone_regex, user_phone))
 
 # ======================
 # 3. Telefon raqamini qabul qilish
 async def process_phone(message: Message, state: FSMContext):
-    await state.update_data(user_phone=message.text)
+    if phone_number_answer(message.text):
+        await state.update_data(user_phone=message.text)
+    else:
+        await message.answer("Iltimos, telefon raqamini to'g'ri formatda kiriting\nNa'muna: 997452346")
+        return
     # Inline keyboard callback Qayerdan uchun
     from .keyboards import place_keyboard
     await message.answer("Qayerdan?", reply_markup=place_keyboard("uz", type="from"))
@@ -135,7 +148,15 @@ async def show_order_summary(message: Message, state: FSMContext):
 
 
 async def process_people(message: Message, state: FSMContext):
-    await state.update_data(user_people=message.text)
+    people_count = message.text.strip()
+    
+    # Faqat raqam ekanligini tekshirish
+    if not people_count.isdigit():
+        await message.answer("❌ Iltimos, faqat raqam kiriting!\nMasalan: 5")
+        return  # Qayta kiritish uchun to'xtatish
+    
+    # Ma'lumotni saqlash
+    await state.update_data(user_people=int(people_count))
     await show_order_summary(message, state)
 
 
@@ -155,11 +176,13 @@ async def confirm_send(message: Message, state: FSMContext, bot: Bot):
 
     SUPERADMIN = int(os.getenv("SUPERADMIN"))
     await bot.send_message(SUPERADMIN, summary)
+    new_order = await create_order(message=summary, user_id = message.from_user.id)
+    # user_id = message.from_user.id
 
     # await send_order_to_group(bot, state)
     from .functions import send_order_to_channel
 
-    await send_order_to_channel(bot, state)
+    await send_order_to_channel(bot, state, order_id=new_order.uid)
 
     await message.answer(
         "✅ So‘rovingiz yuborildi.\n\nHaydovchilarimiz siz bilan bog'lanadi 🚖",
@@ -282,19 +305,27 @@ async def save_edited_value(message: Message, state: FSMContext,bot:Bot):
 CHANNEL_ID = "@taxi_test_uz"
 from aiogram import Bot
 from aiogram.fsm.context import FSMContext
+from user.keyboards import receive
+from user.callback import location_messages, order_texts, order_locations, location_messages
 
 CHANNEL_ID = "@taxi_test_uz"
-async def send_order_to_channel(bot: Bot, state: FSMContext):
-    data = await state.get_data()
 
+async def send_order_to_channel(bot: Bot, state: FSMContext, order_id):
+    data = await state.get_data()
+    
     location = data.get("user_location")
 
+    
     map_link = ""
     if location:
         map_link = f"https://maps.google.com/?q={location.latitude},{location.longitude}"
 
+    # Yo'lovchi ma'lumotlarini saqlash (order_id bo'yicha)
+    # Bu yerda xohlasangiz dictionary ga saqlashingiz mumkin
+    # Masalan: orders[order_id] = {"phone": data.get('user_phone'), "telegram_id": data.get('user_telegram_id')}
+
     text = f"""
-🚕 YANGI BUYURTMA
+🚕 YANGI BUYURTMA #{order_id}
 
 👤 Ism: {data.get('user_firstname')}
 📞 Telefon: {data.get('user_phone')}
@@ -309,14 +340,29 @@ async def send_order_to_channel(bot: Bot, state: FSMContext):
 {map_link}
 """
 
-    await bot.send_message(CHANNEL_ID, text)
 
+    # Asosiy xabar
+    msg = await bot.send_message(
+        CHANNEL_ID,
+        text,
+        reply_markup=receive(order_id)  
+    )
+
+    # Lokatsiya xabari
     if location:
-        await bot.send_location(
+        loc_msg = await bot.send_location(
             CHANNEL_ID,
             latitude=location.latitude,
             longitude=location.longitude
         )
+        location_messages[str(order_id)] = loc_msg.message_id
+
+        order_locations[str(order_id)] = (location.latitude, location.longitude)
+
+    order_texts[str(order_id)] = text
+
+    await state.update_data(order_id=order_id)
+    return order_id
 
         
     # # Adminga jo'natish
@@ -327,4 +373,49 @@ async def send_order_to_channel(bot: Bot, state: FSMContext):
      
 # ==============================================
 # Endi Mening so'rovlarim qismini yozamiz
+
+async def channel_handler(message):
+    link = "https://t.me/taxi_test_uz"
+
+    from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="📢 Guruhga o'tish", url=link)]
+        ]
+    )
+
+    await message.answer(
+        f"📢 Shu link orqali guruhga o'tishingiz mumkin:\n{link}",
+        reply_markup=keyboard
+    )
+
+
+async def complaints_start(message, state):
+    await state.set_state(user_states.complaint_text)
+
+    await message.answer(
+        "✍️ Shikoyat va takliflaringizni yuborishingiz mumkin.\n\n"
+        " Faqat hammasini bitta yozishda Yozib yuboring 👇"
+    )
+
+async def complaints_handler(message, state, bot):
+    ADMIN_CHAT_ID = -1003780044555 
+
+    user = message.from_user
+
+    text = (
+        f"📩 Yangi shikoyat/taklif\n\n"
+        f"👤 User: {user.full_name}\n"
+        f"🆔 ID: {user.id}\n\n"
+        f"💬 Xabar:\n{message.text}"
+    )
+
+    await bot.send_message(ADMIN_CHAT_ID, text)
+
+    await message.answer("✅ Xabaringiz qabul qilindi. Rahmat!")
+
+    await state.clear()  # holatni tozalash
+
+
 
