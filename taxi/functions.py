@@ -133,7 +133,7 @@ async def info_answer(message: Message, state: FSMContext):
 
 async def update_info_answer(message: Message, state: FSMContext):
     await message.answer("You can change your information", reply_markup=edit_profile)
-    
+    await state.set_state(taxi_states.edit_confirm)
 
 
 async def choose_edit_firstname(message: Message, state: FSMContext):

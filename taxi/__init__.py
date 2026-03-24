@@ -43,12 +43,12 @@ router.message.register(confirm_answer, taxi_states.confirm, F.text == "Confirm"
 
 router.message.register(info_answer, F.text == "Info")
 router.message.register(update_info_answer, F.text == "Update info")
-router.message.register(choose_edit_firstname, F.text == "Ism")
-router.message.register(choose_edit_lastname, F.text == "Familiya")
-router.message.register(choose_edit_phone, F.text == "Telefon")
-router.message.register(choose_edit_car_model, F.text == "Mashina modeli")
-router.message.register(choose_edit_car_number, F.text == "Mashina raqami")
-router.message.register(back_to_profile, F.text == "◀️ Orqaga")
+router.message.register(choose_edit_firstname, taxi_states.edit_confirm, F.text == "Ism")
+router.message.register(choose_edit_lastname, taxi_states.edit_confirm, F.text == "Familiya")
+router.message.register(choose_edit_phone, taxi_states.edit_confirm, F.text == "Telefon")
+router.message.register(choose_edit_car_model, taxi_states.edit_confirm, F.text == "Mashina modeli")
+router.message.register(choose_edit_car_number, taxi_states.edit_confirm, F.text == "Mashina raqami")
+router.message.register(back_to_profile, taxi_states.edit_confirm, F.text == "◀️ Orqaga")
 
 router.message.register(get_new_firstname_answer, taxi_states.edit_firstname)
 router.message.register(get_new_lastname_answer, taxi_states.edit_lastname)
