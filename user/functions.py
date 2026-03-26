@@ -59,25 +59,15 @@ async def process_firstname(message: Message, state: FSMContext):
 # 2. Familiya qabul qilish
 async def process_lastname(message: Message, state: FSMContext):
     await state.update_data(user_lastname=message.text)
-    await message.answer("Telefon raqamingizni  kiriting\nNamuna: 995673412 ")
+    await message.answer("Telefon raqamingizni  kiriting\nNamuna: 995673412  yoki +9981232321")
     await state.set_state(user_states.user_phone)
 
-import re
-
-def phone_number_answer(user_phone):
-    # Regex qoidasi
-    uz_phone_regex = r'\d{9}$'
-    # Tekshirish
-    return bool(re.match(uz_phone_regex, user_phone))
 
 # ======================
 # 3. Telefon raqamini qabul qilish
 async def process_phone(message: Message, state: FSMContext):
-    if phone_number_answer(message.text):
-        await state.update_data(user_phone=message.text)
-    else:
-        await message.answer("Iltimos, telefon raqamini to'g'ri formatda kiriting\nNa'muna: 997452346")
-        return
+    await state.update_data(user_phone=message.text)
+
     # Inline keyboard callback Qayerdan uchun
     from .keyboards import place_keyboard
     await message.answer("Qayerdan?", reply_markup=place_keyboard("uz", type="from"))
@@ -118,14 +108,14 @@ async def process_location(message: Message, state: FSMContext):
     )
 
     await message.answer(
-        "🕒 Qachon ketmoqchisiz?\nSana va vaqtni kiriting (YYYY-MM-DD HH:MM):"
+        "🕒 Qachon ketmoqchisiz?\n📅 Namuna: 25.03.2026 14:30 "
     )
 
     await state.set_state(user_states.user_time)# ======================
 # 7. Sana va vaqt qabul qilish
 async def process_time(message: Message, state: FSMContext):
     await state.update_data(user_time=message.text)
-    await message.answer("Nechta odam ketadi?")
+    await message.answer("Nechta odam ketadi? \n Namuna: 2")
     await state.set_state(user_states.user_people)
 
 # ======================
@@ -365,15 +355,6 @@ async def send_order_to_channel(bot: Bot, state: FSMContext, order_id):
     return order_id
 
         
-    # # Adminga jo'natish
-    # SUPERADMIN = int(os.getenv("SUPERADMIN"))
-    # await bot.send_message(SUPERADMIN, f"Yangi so'rov:\n{summary}")
-
-    # await state.clear()
-     
-# ==============================================
-# Endi Mening so'rovlarim qismini yozamiz
-
 async def channel_handler(message):
     link = "https://t.me/taxi_test_uz"
 
