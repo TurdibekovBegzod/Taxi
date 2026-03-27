@@ -67,8 +67,7 @@ def edit_keyboard(user_lang: str):
             [KeyboardButton(text="Ism"), KeyboardButton(text="Familiya")],
             [KeyboardButton(text="Qayerdan"), KeyboardButton(text="Qayerga")],
             [KeyboardButton(text="Lokatsiya")],
-            [KeyboardButton(text="Sana va vaqt"),KeyboardButton(text="Telefon")],
-            [KeyboardButton(text="Odamlar soni")],
+            [KeyboardButton(text="Telefon"),KeyboardButton(text="Odamlar soni")],
             [KeyboardButton(text="⬅️ Orqaga")]
         ],
         resize_keyboard=True

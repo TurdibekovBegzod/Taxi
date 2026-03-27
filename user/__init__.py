@@ -12,7 +12,6 @@ from .functions import (
                         process_lastname, 
                         process_phone, 
                         process_location, 
-                        process_time, 
                         process_people,
                         confirm_send,
                         cancel_order,
@@ -47,7 +46,6 @@ from aiogram.filters import StateFilter
 from .filters import (
     PhoneFilter,
     PeopleCountFilter,
-    DateTimeFilter,
 )
 
 router = Router()
@@ -81,13 +79,6 @@ router.callback_query.register(process_place2, lambda c: c.data.startswith("plac
 router.message.register(process_location, StateFilter(user_states.user_location))
 router.message.register(process_location, StateFilter(user_states.user_confirm))
 
-# Sana va vaqt - filter bilan
-router.message.register(
-    process_time,
-    StateFilter(user_states.user_time),
-    DateTimeFilter()
-)
-
 # Odamlar soni - filter bilan
 router.message.register(
     process_people,
@@ -115,12 +106,6 @@ async def edit_value_handler(message: Message, state: FSMContext, bot: Bot):
             return
         await save_edited_value(message, state, bot)
     
-    elif editing_field == "user_time":
-        datetime_filter = DateTimeFilter()
-        if not await datetime_filter(message):
-            return
-        await save_edited_value(message, state, bot)
-    
     elif editing_field == "user_people":
         people_filter = PeopleCountFilter()
         if not await people_filter(message):
@@ -128,7 +113,6 @@ async def edit_value_handler(message: Message, state: FSMContext, bot: Bot):
         await save_edited_value(message, state, bot)
     
     else:
-        # Ism, familiya va boshqa maydonlar filter talab qilmaydi
         await save_edited_value(message, state, bot)
 
 # ======================

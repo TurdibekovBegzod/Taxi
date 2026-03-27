@@ -8,7 +8,6 @@ from taxi.states import taxi_states
 from data.crud_commands import create_order
 import os
 
-
 from user.keyboards import (
     language_keyboard,
     passenger_keyboard,
@@ -20,7 +19,6 @@ from user.i18n import t
 from user.keyboards import language_keyboard, passenger_keyboard
 from user.i18n import t
 
-# ======================
 # /language komandasi
 async def language_command(message: Message, state: FSMContext):
     # hozircha default til
@@ -40,30 +38,23 @@ async def passenger_start(message: Message, state: FSMContext):
     )
     await state.set_state(user_states.choose_option)
 
-
-
-# ======================
-# Sayohat tugmasi bosilganda FSM boshlash
+# Sayohat tugmasi bosilganda 
 async def travel_start(message: Message, state: FSMContext):
     await message.answer("Ismingizni kiriting:", reply_markup=ReplyKeyboardRemove())
     await state.set_state(user_states.user_firstname)
 
-# ======================
 # 1. Ism qabul qilish
 async def process_firstname(message: Message, state: FSMContext):
     await state.update_data(user_firstname=message.text)
     await message.answer("Familiyangizni kiriting:")
     await state.set_state(user_states.user_lastname)
 
-# ======================
 # 2. Familiya qabul qilish
 async def process_lastname(message: Message, state: FSMContext):
     await state.update_data(user_lastname=message.text)
     await message.answer("Telefon raqamingizni  kiriting\nNamuna: 995673412  yoki +9981232321")
     await state.set_state(user_states.user_phone)
 
-
-# ======================
 # 3. Telefon raqamini qabul qilish
 async def process_phone(message: Message, state: FSMContext):
     await state.update_data(user_phone=message.text)
@@ -73,7 +64,6 @@ async def process_phone(message: Message, state: FSMContext):
     await message.answer("Qayerdan?", reply_markup=place_keyboard("uz", type="from"))
     await state.set_state(user_states.user_place1)
 
-# ======================
 # 6. Lokatsiya qabul qilish
 async def process_location(message: Message, state: FSMContext):
 
@@ -85,7 +75,6 @@ async def process_location(message: Message, state: FSMContext):
     data = await state.get_data()
     editing_field = data.get("editing_field")
 
-    # =====================
     # locatsiya tahrirlansa
     if editing_field == "user_location":
 
@@ -98,27 +87,15 @@ async def process_location(message: Message, state: FSMContext):
 
         # qayta summary ko'rsatish
         await show_order_summary(message, state)
-
         return
 
-    # =====================
+    await message.answer("Nechta odam ketadi? \n Namuna: 2")
+    await state.set_state(user_states.user_people)
     # ODDIY BUYURTMA JARAYONI
     await state.update_data(
         user_location=message.location
     )
 
-    await message.answer(
-        "🕒 Qachon ketmoqchisiz?\n📅 Namuna: 25.03.2026 14:30 "
-    )
-
-    await state.set_state(user_states.user_time)# ======================
-# 7. Sana va vaqt qabul qilish
-async def process_time(message: Message, state: FSMContext):
-    await state.update_data(user_time=message.text)
-    await message.answer("Nechta odam ketadi? \n Namuna: 2")
-    await state.set_state(user_states.user_people)
-
-# ======================
 # 8. Odamlar soni qabul qilish va yakunlash
 async def show_order_summary(message: Message, state: FSMContext):
     data = await state.get_data()
@@ -129,13 +106,11 @@ async def show_order_summary(message: Message, state: FSMContext):
         f"Telefon: {data.get('user_phone')}\n"
         f"Qayerdan: {data.get('user_place1')}\n"
         f"Qayerga: {data.get('user_place2')}\n"
-        f"Sana va vaqt: {data.get('user_time')}\n"
         f"Odamlar soni: {data.get('user_people')}\n\n"
     )
 
     await message.answer(summary, reply_markup=confirm_keyboard("uz"))
     await state.set_state(user_states.confirm_order)
-
 
 async def process_people(message: Message, state: FSMContext):
     people_count = message.text.strip()
@@ -143,12 +118,11 @@ async def process_people(message: Message, state: FSMContext):
     # Faqat raqam ekanligini tekshirish
     if not people_count.isdigit():
         await message.answer("❌ Iltimos, faqat raqam kiriting!\nMasalan: 5")
-        return  # Qayta kiritish uchun to'xtatish
+        return 
     
     # Ma'lumotni saqlash
     await state.update_data(user_people=int(people_count))
     await show_order_summary(message, state)
-
 
 async def confirm_send(message: Message, state: FSMContext, bot: Bot):
     data = await state.get_data()
@@ -160,16 +134,12 @@ async def confirm_send(message: Message, state: FSMContext, bot: Bot):
         f"Telefon: {data.get('user_phone', '')}\n"
         f"Qayerdan: {data.get('user_place1', '')}\n"
         f"Qayerga: {data.get('user_place2', '')}\n"
-        f"Sana va vaqt: {data.get('user_time', '')}\n"
         f"Odamlar soni: {data.get('user_people', '')}"
     )
 
     SUPERADMIN = int(os.getenv("SUPERADMIN"))
     await bot.send_message(SUPERADMIN, summary)
     new_order = await create_order(message=summary, user_id = message.from_user.id)
-    # user_id = message.from_user.id
-
-    # await send_order_to_group(bot, state)
     from .functions import send_order_to_channel
 
     await send_order_to_channel(bot, state, order_id=new_order.uid)
@@ -180,7 +150,6 @@ async def confirm_send(message: Message, state: FSMContext, bot: Bot):
     )
 
     await state.set_state(user_states.choose_option)
-
 
 async def cancel_order(message: Message, state: FSMContext):
     
@@ -197,7 +166,6 @@ async def edit_order(message: Message, state: FSMContext):
         reply_markup=edit_keyboard("uz")
     )
     await state.set_state(user_states.edit_field)
-
 
 async def choose_edit_field(message: Message, state: FSMContext):
     from .keyboards import place_keyboard
@@ -254,7 +222,6 @@ async def choose_edit_field(message: Message, state: FSMContext):
         "Ism": ("user_firstname", "Yangi ismingizni kiriting:"),
         "Familiya": ("user_lastname", "Yangi familiyangizni kiriting:"),
         "Telefon": ("user_phone", "Yangi telefon raqamingizni kiriting:"),
-        "Sana va vaqt": ("user_time", "Yangi sana va vaqtni kiriting (YYYY-MM-DD HH:MM):"),
         "Odamlar soni": ("user_people", "Yangi odamlar sonini kiriting:")
     }
 
@@ -304,15 +271,10 @@ async def send_order_to_channel(bot: Bot, state: FSMContext, order_id):
     data = await state.get_data()
     
     location = data.get("user_location")
-
     
     map_link = ""
     if location:
         map_link = f"https://maps.google.com/?q={location.latitude},{location.longitude}"
-
-    # Yo'lovchi ma'lumotlarini saqlash (order_id bo'yicha)
-    # Bu yerda xohlasangiz dictionary ga saqlashingiz mumkin
-    # Masalan: orders[order_id] = {"phone": data.get('user_phone'), "telegram_id": data.get('user_telegram_id')}
 
     text = f"""
 🚕 YANGI BUYURTMA #{order_id}
@@ -324,12 +286,9 @@ async def send_order_to_channel(bot: Bot, state: FSMContext, order_id):
 📍 Qayerga: {data.get('user_place2')}
 
 👥 Odamlar: {data.get('user_people')}
-🕒 Vaqt: {data.get('user_time')}
-
 📍 Lokatsiya:
 {map_link}
 """
-
 
     # Asosiy xabar
     msg = await bot.send_message(
@@ -353,8 +312,7 @@ async def send_order_to_channel(bot: Bot, state: FSMContext, order_id):
 
     await state.update_data(order_id=order_id)
     return order_id
-
-        
+       
 async def channel_handler(message):
     link = "https://t.me/taxi_test_uz"
 
@@ -370,7 +328,6 @@ async def channel_handler(message):
         f"📢 Shu link orqali guruhga o'tishingiz mumkin:\n{link}",
         reply_markup=keyboard
     )
-
 
 async def complaints_start(message, state):
     await state.set_state(user_states.complaint_text)
@@ -393,9 +350,7 @@ async def complaints_handler(message, state, bot):
     )
 
     await bot.send_message(ADMIN_CHAT_ID, text)
-
     await message.answer("✅ Xabaringiz qabul qilindi. Rahmat!")
-
     await state.clear()  # holatni tozalash
 
 

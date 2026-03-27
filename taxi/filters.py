@@ -1,48 +1,88 @@
-from aiogram import types
-from aiogram.filters import BaseFilter
 import re
-
+from aiogram.filters import BaseFilter
+from aiogram.types import Message
+from datetime import datetime
 
 class PhoneFilter(BaseFilter):
-    async def __call__(self, message: types.Message) -> bool:
-        # accept contact messages too
-        if message.contact and message.contact.phone_number:
-            phone = str(message.contact.phone_number)
+    async def __call__(self, message: Message) -> bool:
+        if not message.text and not message.contact:
+            await message.answer("📞 Telefon raqamingizni kiriting\nNamuna: +998901234567 yoki 901234567")
+            return False
+
+        if message.contact:
+            phone = message.contact.phone_number
         else:
-            phone = (message.text or "").strip()
-
-        if not phone:
-            await message.answer("Telefon raqamingizni yuboring yoki yozing, iltimos.", reply_markup=None)
-            return False
-
-        digits = re.sub(r"\D", "", phone)
-        if not re.fullmatch(r"(?:998|0)?\d{9}", digits):
-            await message.answer(
-                "Telefon raqami noto'g'ri format. Iltimos: +998901234567 yoki 0901234567 kabi yuboring.",
-                reply_markup=None
-            )
-            return False
-
-        return True
+            phone = message.text.strip()
+        
+        digits = re.sub(r"\D", "", phone)        
+        if len(digits) == 9 and digits.startswith('9'):
+            return True
+        elif len(digits) == 12 and digits.startswith('998'):
+            return True
+        
+        await message.answer(
+            "❌ Telefon raqam noto'g'ri formatda!\n\n"
+            "✅ Qabul qilinadigan formatlar:\n"
+            "• +998901234567\n"
+            "• 901234567\n"
+            
+        )
+        return False
 
 
 class CarNumberFilter(BaseFilter):
-    async def __call__(self, message: types.Message) -> bool:
-        value = (message.text or "").strip().upper()
-
-        if not value:
-            await message.answer("Mashina raqamini kiriting, iltimos.", reply_markup=None)
+    async def __call__(self, message: Message) -> bool:
+        if not message.text:
+            await message.answer("🚗 Mashina raqamini kiriting!\nMisol: 01A123AA")
             return False
-
-        # O'zbek salon raqami formatlari:
-        # 41A111AA (2 raqam + 1 harf + 3 raqam + 2 harf)
-        # 01A1234  (2 raqam + 1 harf + 4 raqam)
-        if not re.fullmatch(r"\d{2}[A-Z]\d{4}|\d{2}[A-Z]\d{3}[A-Z]{2}", value):
+        
+        car_number = message.text.strip().upper()
+        car_number = car_number.replace(' ', '').replace('-', '')
+        
+        # Harflar va raqamlardan iboratligini tekshirish
+        if not re.match(r'^[A-Z0-9]+$', car_number):
             await message.answer(
-                "Mashina raqami noto'g'ri. Iltimos 41A111AA yoki 01A1234 formatida kiriting.",
-                reply_markup=None
+                "❌ Mashina raqami faqat harf va raqamlardan iborat bo'lishi kerak!\n"
+                "Misol: 01A123AA"
             )
             return False
+        
+        # Barcha mumkin bo'lgan patternlar
+        patterns = [
+            # Eski format: 2 raqam + 1 harf + 3-4 raqam + 0-2 harf
+            r'^\d{2}[A-Z]\d{3,4}[A-Z]{0,2}$',
+            # Yangi format: 1 raqam + 1 harf + 3-4 raqam + 0-2 harf
+            r'^\d[A-Z]\d{3,4}[A-Z]{0,2}$',
+            # Toshkent: 2 raqam + 2 harf + 3-4 raqam
+            r'^\d{2}[A-Z]\d{3}(CD|TD)$',
+        ]
+        
+        for pattern in patterns:
+            if re.match(pattern, car_number):
+                return True
+        
+        await message.answer(
+            "❌ Mashina raqami noto'g'ri formatda!\n\n"
+            "✅ Qabul qilinadigan formatlar:\n"
+            "📝 Misol: \n 01A123AA yoki 1A1234A"
+        )
+        return False
 
-        return True
+def format_phone_number(phone: str) -> str:
+    """Telefon raqamni +998951197705 yoki 951197705 formatida kriting"""
+    digits = re.sub(r"\D", "", phone.strip())
+    
+    if len(digits) == 9:
+        digits = '998' + digits[1:]
+    elif len(digits) == 12 and digits.startswith('998'):
+        pass
+    else:
+        return phone
+    
+    return '+' + digits
 
+def format_car_number(car_number: str) -> str:
+    """Mashina raqamni formatlash"""
+    car_number = car_number.strip().upper()
+    car_number = car_number.replace(' ', '').replace('-', '')
+    return car_number

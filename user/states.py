@@ -12,7 +12,7 @@ class user_states(StatesGroup):
     user_place1 = State()
     user_place2 = State()
     user_location = State()   #
-    user_time = State()
+    # user_time = State()
     user_people = State()
     user_confirm = State()
 

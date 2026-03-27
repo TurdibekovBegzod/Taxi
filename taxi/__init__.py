@@ -33,6 +33,7 @@ router = Router()
 router.message.register(start_command_answer, CommandStart())
 router.message.register(change_role_command_answer, Command("change_role"))
 router.message.register(to_choose_a_role_answer, taxi_states.choosing_role)
+
 router.message.register(sign_up_answer, F.text == "Sign up")
 router.message.register(get_firstname_answer, taxi_states.firstname)
 router.message.register(get_lastname_answer, taxi_states.lastname)
@@ -43,6 +44,7 @@ router.message.register(confirm_answer, taxi_states.confirm, F.text == "Confirm"
 
 router.message.register(info_answer, F.text == "Info")
 router.message.register(update_info_answer, F.text == "Update info")
+
 router.message.register(choose_edit_firstname, taxi_states.edit_confirm, F.text == "Ism")
 router.message.register(choose_edit_lastname, taxi_states.edit_confirm, F.text == "Familiya")
 router.message.register(choose_edit_phone, taxi_states.edit_confirm, F.text == "Telefon")
@@ -55,3 +57,5 @@ router.message.register(get_new_lastname_answer, taxi_states.edit_lastname)
 router.message.register(get_new_phone_answer, taxi_states.edit_phone, PhoneFilter())
 router.message.register(get_new_car_model_answer, taxi_states.edit_car_model)
 router.message.register(get_new_car_number_answer, taxi_states.edit_car_number, CarNumberFilter())
+
+__all__ = ['router']
