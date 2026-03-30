@@ -174,29 +174,29 @@ async def back_to_profile(message: Message, state: FSMContext):
 async def get_new_firstname_answer(message: Message, state: FSMContext):
     await crud_commands.update(models.Taxi, {'telegram_id': message.from_user.id}, {'firstname': message.text})
     await message.answer("Ismingiz yangilandi ✅", reply_markup=edit_profile)
-    await state.clear()
+    await state.set_state(taxi_states.edit_confirm)
 
 
 async def get_new_lastname_answer(message: Message, state: FSMContext):
     await crud_commands.update(models.Taxi, {'telegram_id': message.from_user.id}, {'lastname': message.text})
     await message.answer("Familiyangiz yangilandi ✅", reply_markup=edit_profile)
-    await state.clear()
+    await state.set_state(taxi_states.edit_confirm)
 
 
 async def get_new_phone_answer(message: Message, state: FSMContext):
     phone = str(message.contact.phone_number) if message.contact and message.contact.phone_number else (message.text or "").strip()
     await crud_commands.update(models.Taxi, {'telegram_id': message.from_user.id}, {'phone_number': phone})
     await message.answer("Telefon raqamingiz yangilandi ✅", reply_markup=edit_profile)
-    await state.clear()
+    await state.set_state(taxi_states.edit_confirm)
 
 
 async def get_new_car_model_answer(message: Message, state: FSMContext):
     await crud_commands.update(models.Taxi, {'telegram_id': message.from_user.id}, {'car_model': message.text})
     await message.answer("Mashina modelingiz yangilandi ✅", reply_markup=edit_profile)
-    await state.clear()
+    await state.set_state(taxi_states.edit_confirm)
 
 
 async def get_new_car_number_answer(message: Message, state: FSMContext):
     await crud_commands.update(models.Taxi, {'telegram_id': message.from_user.id}, {'car_number': message.text})
     await message.answer("Mashina raqamingiz yangilandi ✅", reply_markup=edit_profile)
-    await state.clear()
+    await state.set_state(taxi_states.edit_confirm)
