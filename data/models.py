@@ -4,7 +4,7 @@ import uuid
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 
 # Centralized DB config
-DATABASE_URL = "sqlite+aiosqlite:///taxi.db"
+DATABASE_URL = "postgresql+asyncpg://postgres:begzod@localhost:5432/taxi_db"
 
 engine = create_async_engine(DATABASE_URL, echo=False)
 
