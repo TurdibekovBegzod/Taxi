@@ -52,6 +52,7 @@ class Order(Base):
     __tablename__ = "orders"
     uid = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
     message = Column(String)
-    user_id = Column(BIGINT, ForeignKey("users.telegram_id", ondelete="CASCADE", onupdate="CASCADE"))   
-
+    user_id = Column(BIGINT)   
+    def __repr__(self):
+        return f"<Order uid={self.uid} message={self.message!r} user_id={self.user_id}>"
 
