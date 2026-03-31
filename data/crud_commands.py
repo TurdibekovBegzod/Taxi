@@ -40,7 +40,7 @@ async def get(model, filters: dict):
         obj = result.scalar_one_or_none()
         return obj
     
-async def create_order(message : str, user_id) -> Order:
+async def create_order(message : str, user_id: int) -> Order:
      async with AsyncSession(engine) as session:
         new_order = Order()
         new_order.message = message

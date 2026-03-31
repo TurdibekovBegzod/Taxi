@@ -2,9 +2,15 @@ from sqlalchemy import Float, create_engine, Column, Integer, String, BigInteger
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 import uuid
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from dotenv import load_dotenv
+import os
+load_dotenv()
+
+DOCKER_DB_URL = os.getenv("DOCKER_DB_URL")
+LOCAL_DB_URL = os.getenv("LOCAL_DB_URL")
 
 # Centralized DB config
-DATABASE_URL = "postgresql+asyncpg://postgres:mysecretpassword@db:5432/taxi_db"
+DATABASE_URL = DOCKER_DB_URL
 
 engine = create_async_engine(DATABASE_URL, echo=False)
 
@@ -45,10 +51,7 @@ class Taxi(Base):
 class Order(Base):
     __tablename__ = "orders"
     uid = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
-    message = Column(String)    
-    user_id = Column(BIGINT, ForeignKey("users.telegram_id", ondelete="CASCADE", onupdate="CASCADE"))
+    message = Column(String)
+    user_id = Column(BIGINT, ForeignKey("users.telegram_id", ondelete="CASCADE", onupdate="CASCADE"))   
 
-async def create_base():
-    engine = create_async_engine("sqlite+aiosqlite:///./taxi.db", echo=True)
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+
