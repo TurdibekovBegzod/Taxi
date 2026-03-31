@@ -18,38 +18,38 @@ from data import crud_commands, models
 
 
 async def start_command_answer(message: Message, bot: Bot, state: FSMContext):
-    await message.answer(text="Welcome to our bot, user!")
+    await message.answer(text="Botimizga xush kelibsiz!")
     await message.answer(
         text="Agar tilni o'zgartirmoqchi bo'lsangiz /language ni bosing.\n"
              "Aks holda davom eting (O'zbek tilida)."
     )
-    await message.answer(text="Choose your role!", reply_markup=show_role_buttons)
+    await message.answer(text="Rolingizni tanlang!", reply_markup=show_role_buttons)
     await state.clear()
     await state.set_state(taxi_states.choosing_role)
 
 
 async def change_role_command_answer(message: Message, state: FSMContext):
     await state.clear()
-    await message.answer(text="Choose your role!", reply_markup=show_role_buttons)
+    await message.answer(text="Rolingizni tanlang!", reply_markup=show_role_buttons)
     await state.set_state(taxi_states.choosing_role)
 
 
 async def to_choose_a_role_answer(message: Message, state: FSMContext):
-    if message.text not in ["Passenger", "Driver"]:
-        await message.answer("You need to choose your role matched on the keyboard!")
+    if message.text not in ["Yo'lovchi", "Haydovchi"]:
+        await message.answer("Klaviaturadagi harflarga mos ravishda rolingizni tanlang")
         return
 
-    await message.answer(text=f"Your role is {message.text}!")
+    await message.answer(text=f"Sizning rolingiz  {message.text}!")
 
-    if message.text == "Driver":
+    if message.text == "Haydovchi":
         driver = await crud_commands.get(models.Taxi, {"telegram_id": message.from_user.id})
         if driver:
             await state.clear()
-            await message.answer(text=f"Hello, {driver.firstname}👋", reply_markup=taxi_profile)
+            await message.answer(text=f"Salom, {driver.firstname}👋", reply_markup=taxi_profile)
             return
 
         await message.answer(
-            text="Driver, you're not registered yet!\nPlease sign up!",
+            text="Haydovchi, siz hali ro‘yxatdan o‘tmagansiz!\nIltimos, ro‘yxatdan o‘ting!",
             reply_markup=sign_up
         )
         await state.set_state(taxi_states.firstname)
@@ -62,19 +62,19 @@ async def to_choose_a_role_answer(message: Message, state: FSMContext):
 
 
 async def sign_up_answer(message: Message, state: FSMContext):
-    await message.answer(text="Please enter your firstname!", reply_markup=ReplyKeyboardRemove())
+    await message.answer(text="Iltimos ismingizni kiriting!", reply_markup=ReplyKeyboardRemove())
     await state.set_state(taxi_states.firstname)
 
 
 async def get_firstname_answer(message: Message, state: FSMContext):
     await state.update_data(firstname=message.text)
-    await message.answer("Please enter your lastname!")
+    await message.answer("Iltimos familiyangizni kiriting!")
     await state.set_state(taxi_states.lastname)
 
 
 async def get_lastname_answer(message: Message, state: FSMContext):
     await state.update_data(lastname=message.text)
-    await message.answer("Please send your contact!", reply_markup=get_contact)
+    await message.answer("Iltimos, kontaktni yuboring!", reply_markup=get_contact)
     await message.answer("Telefon raqamini ushbu formatlarda yuboring :\n       +998901234567 yoki 0901234567.")
     await state.set_state(taxi_states.contact)
 
@@ -86,20 +86,20 @@ async def get_contact_answer(message: Message, state: FSMContext):
         phone = (message.text or "").strip()
 
     await state.update_data(phone_number=phone)
-    await message.answer("Please enter your car model!", reply_markup=ReplyKeyboardRemove())
+    await message.answer("Iltimos, mashinangiz modelini kiriting!", reply_markup=ReplyKeyboardRemove())
     await state.set_state(taxi_states.car_model)
 
 
 async def get_car_model_answer(message: Message, state: FSMContext):
     await state.update_data(car_model=message.text)
-    await message.answer("Please enter your car number!")
+    await message.answer("Iltimos, mashinangiz raqamini kiriting!")
     await message.answer("Mashina raqamini ushbu formatlarda kiriting :\n       41A111AA yoki 01A1234")
     await state.set_state(taxi_states.car_number)
 
 
 async def get_car_number_answer(message: Message, state: FSMContext):
     await state.update_data(car_number=message.text)
-    await message.answer("Please make sure your all information is right, and confirm!", reply_markup=confirm)
+    await message.answer("Iltimos, barcha ma’lumotlaringiz to‘g‘ri ekanligini tekshiring va tasdiqlang!", reply_markup=confirm)
     await state.set_state(taxi_states.confirm)
 
 
@@ -109,14 +109,14 @@ async def confirm_answer(message: Message, state: FSMContext):
     data.pop('role', None)
 
     await crud_commands.add(model=models.Taxi, data=data)
-    await message.answer("Your all information is saved ✅!", reply_markup=taxi_profile)
+    await message.answer("Barcha ma’lumotlaringiz saqlandi ✅!", reply_markup=taxi_profile)
     await state.clear()
 
 
 async def info_answer(message: Message, state: FSMContext):
     driver = await crud_commands.get(models.Taxi, {"telegram_id": message.from_user.id})
     if not driver:
-        await message.answer("Siz ro'yxatdan o'tmagan ekansiz. Iltimos avval Sign up ni tanlang.")
+        await message.answer("Siz ro'yxatdan o'tmagan ekansiz. Iltimos avval 'Ro‘yxatdan o‘tish' ni tanlang.")
         return
 
     summary = (
@@ -132,7 +132,7 @@ async def info_answer(message: Message, state: FSMContext):
 
 
 async def update_info_answer(message: Message, state: FSMContext):
-    await message.answer("You can change your information", reply_markup=edit_profile)
+    await message.answer("Ma’lumotlaringizni o‘zgartirishingiz mumkin", reply_markup=edit_profile)
     await state.set_state(taxi_states.edit_confirm)
 
 

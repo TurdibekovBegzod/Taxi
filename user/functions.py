@@ -280,6 +280,7 @@ async def send_order_to_channel(bot: Bot, state: FSMContext, order_id):
 🚕 YANGI BUYURTMA #{order_id}
 
 👤 Ism: {data.get('user_firstname')}
+👤 Familiya: {data.get('user_lastname')}
 📞 Telefon: {data.get('user_phone')}
 
 📍 Qayerdan: {data.get('user_place1')}

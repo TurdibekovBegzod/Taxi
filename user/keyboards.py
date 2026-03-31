@@ -23,7 +23,7 @@ def passenger_keyboard(user_lang: str):
                 KeyboardButton(text=t(user_lang, "passenger.travel"))
             ],
             [
-                KeyboardButton(text="Channel")
+                KeyboardButton(text="Kanal")
             ],
             [
                 KeyboardButton(text=t(user_lang, "passenger.complaints"))

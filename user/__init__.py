@@ -59,7 +59,7 @@ async def confirm_handler(message: Message, state: FSMContext, bot: Bot):
 router.message.register(language_command, Command("language"))
 router.callback_query.register(language_callback, F.data.in_(["lang_uz", "lang_ru"]))
 router.message.register(passenger_start, F.text.in_(["Yo'lovchi", "Passenger"]))
-router.message.register(travel_start, F.text.in_(["Sayohat", "Поездка"]), StateFilter(user_states.choose_option))
+router.message.register(travel_start, F.text.in_(["Sayohat", "Поездка"]))
 
 # ======================
 # ASOSIY MA'LUMOTLAR - FILTERLAR BILAN
@@ -129,6 +129,6 @@ router.callback_query.register(client_no, F.data.startswith("client_no_"))
 
 # ======================
 # BOSHQA HANDLERLAR
-router.message.register(channel_handler, F.text == "Channel")
+router.message.register(channel_handler, F.text == "Kanal")
 router.message.register(complaints_start, lambda msg: msg.text == "Shikoyatlar va takliflar")
 router.message.register(complaints_handler, StateFilter(user_states.complaint_text))

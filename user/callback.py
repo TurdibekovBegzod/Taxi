@@ -331,7 +331,7 @@ async def send_followup_questions(bot, order_id: str):
 
     await bot.send_message(
         chat_id=driver_id,
-        text="Yo‘lovchi bilan kelisha oldingizmi?",
+        text="Yo‘lovchi bilan bog'lana oldingizmi?",
         reply_markup=driver_keyboard
     )
 
@@ -406,7 +406,7 @@ async def driver_yes(callback: CallbackQuery):
 
     await callback.bot.send_message(
         chat_id=passenger_id,
-        text="Taxi bilan kelisha oldingizmi?",
+        text="Taxi bilan bog'lana oldingizmi?",
         reply_markup=passenger_keyboard
     )
 
