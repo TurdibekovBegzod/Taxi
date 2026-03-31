@@ -139,7 +139,7 @@ async def confirm_send(message: Message, state: FSMContext, bot: Bot):
 
     SUPERADMIN = int(os.getenv("SUPERADMIN"))
     await bot.send_message(SUPERADMIN, summary)
-    new_order = await create_order(message=summary, user_id = message.from_user.id)
+    new_order = await create_order(message=summary, user_id = int(message.from_user.id))
     from .functions import send_order_to_channel
 
     await send_order_to_channel(bot, state, order_id=new_order.uid)

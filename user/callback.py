@@ -81,12 +81,11 @@ resent_orders = set()
 
 async def accept_order(callback: CallbackQuery):
     # Faqat haydovchi tekshiruvi
-    if not await is_driver(str(callback.from_user.id)):
+    if not await is_driver(int(callback.from_user.id)):
         await callback.answer("❌ Bu tugmani faqat haydovchilar bosishi mumkin!", show_alert=True)
-        return
-    callback.from_user.id
+        return callback.from_user.id
     
-    driver = await get_driver(str(callback.from_user.id))
+    driver = await get_driver(int(callback.from_user.id))
     order_id = uuid.UUID(callback.data.split("_", 1)[1])
     order_id_str = str(order_id) 
 

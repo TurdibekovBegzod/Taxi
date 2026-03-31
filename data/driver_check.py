@@ -7,6 +7,6 @@ async def is_driver(telegram_id: str) -> bool:
     driver = await get(Taxi, {"telegram_id": telegram_id})
     return driver is not None
 
-async def get_driver(telegram_id: str):
+async def get_driver(telegram_id: int):
     """Haydovchi ma'lumotlarini olish"""
     return await get(Taxi, {"telegram_id": telegram_id})
