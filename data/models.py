@@ -1,10 +1,16 @@
-from sqlalchemy import Float, create_engine, Column, Integer, String, BigInteger, Date, ForeignKey, UUID
+from sqlalchemy import Float, create_engine, Column, Integer, String, BigInteger, Date, ForeignKey, UUID, BIGINT
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 import uuid
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from dotenv import load_dotenv
+import os
+load_dotenv()
+
+DOCKER_DB_URL = os.getenv("DOCKER_DB_URL")
+LOCAL_DB_URL = os.getenv("LOCAL_DB_URL")
 
 # Centralized DB config
-DATABASE_URL = "postgresql+asyncpg://postgres:begzod@localhost:5432/taxi_db"
+DATABASE_URL = DOCKER_DB_URL
 
 engine = create_async_engine(DATABASE_URL, echo=False)
 
@@ -38,7 +44,7 @@ class Taxi(Base):
     phone_number = Column(String)
     car_model = Column(String)
     car_number = Column(String)
-    telegram_id = Column(String)
+    telegram_id = Column(BIGINT)
     def __repr__(self):
         return f"<Taxi id={self.id} fullname={self.fullname!r} nomer={self.nomer} car_model={self.car_model!r} car_nomer={self.car_nomer} telegram_id={self.telegram_id}>"
 
@@ -48,7 +54,4 @@ class Order(Base):
     message = Column(String)
     user_id = Column(String)
 
-async def create_base():
-    engine = create_async_engine("sqlite+aiosqlite:///./taxi.db", echo=True)
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+

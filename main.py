@@ -54,7 +54,6 @@ async def shutdown(bot: Bot):
 
 async def main():
     scheduler.start()
-    await models.create_base()
     dp.startup.register(startup)
     dp.shutdown.register(shutdown)
 
