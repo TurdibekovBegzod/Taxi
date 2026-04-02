@@ -57,7 +57,7 @@ async def to_choose_a_role_answer(message: Message, state: FSMContext):
 
     # Passenger
     user_lang = "uz"
-    await message.answer("choose.option", reply_markup=passenger_keyboard(user_lang))
+    await message.answer("Salom yo'lovchi 👋", reply_markup=passenger_keyboard(user_lang))
     await state.set_state(user_states.choose_option)
 
 

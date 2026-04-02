@@ -31,11 +31,11 @@ async def language_command(message: Message, state: FSMContext):
     await state.set_state(taxi_states.choosing_role)
 
 async def passenger_start(message: Message, state: FSMContext):
-    user_lang = "uz"  # Bu yerda foydalanuvchining tanlagan tilini olishingiz mumkin
-    await message.answer(
-        t(user_lang, "choose.option"),  # Masalan, "Quyidagi bo‘limlardan birini tanlang:"
-        reply_markup=passenger_keyboard(user_lang)
-    )
+    # user_lang = "uz"  # Bu yerda foydalanuvchining tanlagan tilini olishingiz mumkin
+    # await message.answer(
+    #     t(user_lang, "choose.option"),  # Masalan, "Quyidagi bo‘limlardan birini tanlang:"
+    #     reply_markup=passenger_keyboard(user_lang)
+    # )
     await state.set_state(user_states.choose_option)
 
 # Sayohat tugmasi bosilganda 
