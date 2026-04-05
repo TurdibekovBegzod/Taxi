@@ -6,7 +6,7 @@ from aiogram.types.keyboard_button import KeyboardButton
 
 show_role_buttons = ReplyKeyboardMarkup(
     keyboard=[
-        [KeyboardButton(text = 'Haydovchi'), KeyboardButton(text = "Yo'lovchi")]
+        [KeyboardButton(text = '🚖 Haydovchi'), KeyboardButton(text = "👤 Yo'lovchi")]
     ]
     ,
     resize_keyboard=True
@@ -22,7 +22,7 @@ sign_up = ReplyKeyboardMarkup(
 get_contact = ReplyKeyboardMarkup(
     keyboard=[
         [
-            KeyboardButton(text = "Raqam yuborish", request_contact=True)
+            KeyboardButton(text = "📱 Telefon raqamini yuborish", request_contact=True)
         ]
     ],
     resize_keyboard=True
@@ -38,10 +38,10 @@ confirm = ReplyKeyboardMarkup(
 taxi_profile = ReplyKeyboardMarkup(
     keyboard=[
         [
-            KeyboardButton(text = "Ma'lumot"), KeyboardButton(text = "Ma'lumotlarni o'zgartirish")
+            KeyboardButton(text = "📄 Ma'lumot"), KeyboardButton(text = "📝 Ma'lumotlarni o'zgartirish")
         ],
         [
-            KeyboardButton(text = "Kanal")
+            KeyboardButton(text = "🗪 Guruhga o'tish")
         ],
         [
             KeyboardButton(text = "Shikoyatlar va takliflar")

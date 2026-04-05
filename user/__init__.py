@@ -58,8 +58,8 @@ async def confirm_handler(message: Message, state: FSMContext, bot: Bot):
 # COMMAND LAR
 router.message.register(language_command, Command("language"))
 router.callback_query.register(language_callback, F.data.in_(["lang_uz", "lang_ru"]))
-router.message.register(passenger_start, F.text.in_(["Yo'lovchi", "Passenger"]))
-router.message.register(travel_start, F.text.in_(["Sayohat", "Поездка"]))
+router.message.register(passenger_start, F.text.in_(["👤 Yo'lovchi", "👤 Passenger"]))
+router.message.register(travel_start, F.text.in_(["🚖 E’lon yaratish", "Поездка"]))
 
 # ======================
 # ASOSIY MA'LUMOTLAR - FILTERLAR BILAN
@@ -118,7 +118,7 @@ async def edit_value_handler(message: Message, state: FSMContext, bot: Bot):
 # ======================
 # CALLBACK QUERY LAR
 router.callback_query.register(accept_order, F.data.startswith("accept_"))
-router.callback_query.register(contact_passenger, F.data.startswith("contact_"))
+# router.callback_query.register(contact_passenger, F.data.startswith("contact_"))
 router.callback_query.register(passenger_yes, F.data.startswith("passenger_yes_"))
 router.callback_query.register(passenger_no, F.data.startswith("passenger_no_"))
 router.callback_query.register(driver_yes, F.data.startswith("driver_yes_"))
@@ -129,6 +129,6 @@ router.callback_query.register(client_no, F.data.startswith("client_no_"))
 
 # ======================
 # BOSHQA HANDLERLAR
-router.message.register(channel_handler, F.text == "Kanal")
+router.message.register(channel_handler, F.text == "🗪 Guruhga o'tish")
 router.message.register(complaints_start, lambda msg: msg.text == "Shikoyatlar va takliflar")
 router.message.register(complaints_handler, StateFilter(user_states.complaint_text))

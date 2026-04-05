@@ -42,8 +42,8 @@ router.message.register(get_car_model_answer, taxi_states.car_model)
 router.message.register(get_car_number_answer, taxi_states.car_number, CarNumberFilter())
 router.message.register(confirm_answer, taxi_states.confirm, F.text == "Tasdiqlash")
 
-router.message.register(info_answer, F.text == "Ma'lumot")
-router.message.register(update_info_answer, F.text == "Ma'lumotlarni o'zgartirish")
+router.message.register(info_answer, F.text == "📄 Ma'lumot")
+router.message.register(update_info_answer, F.text == "📝 Ma'lumotlarni o'zgartirish")
 
 router.message.register(choose_edit_firstname, taxi_states.edit_confirm, F.text == "Ism")
 router.message.register(choose_edit_lastname, taxi_states.edit_confirm, F.text == "Familiya")

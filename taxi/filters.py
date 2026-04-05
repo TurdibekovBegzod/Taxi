@@ -14,7 +14,7 @@ class PhoneFilter(BaseFilter):
             phone = message.text.strip()
         
         digits = re.sub(r"\D", "", phone)        
-        if len(digits) == 9 and digits.startswith('9'):
+        if len(digits) == 9:
             return True
         elif len(digits) == 12 and digits.startswith('998'):
             return True

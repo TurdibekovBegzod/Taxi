@@ -2,6 +2,7 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from user.i18n import t
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 def language_keyboard():
     return InlineKeyboardMarkup(
@@ -23,7 +24,7 @@ def passenger_keyboard(user_lang: str):
                 KeyboardButton(text=t(user_lang, "passenger.travel"))
             ],
             [
-                KeyboardButton(text="Kanal")
+                KeyboardButton(text="🗪 Guruhga o'tish")
             ],
             [
                 KeyboardButton(text=t(user_lang, "passenger.complaints"))
@@ -74,20 +75,29 @@ def edit_keyboard(user_lang: str):
     )
 
 
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-def receive(order_id):
+
+def receive(order_id, user_id):
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
                 InlineKeyboardButton(
                     text="✅ Qabul qilish",
-                    callback_data=f"accept_{order_id}"
-                ),
-                InlineKeyboardButton(
-                    text="📞 Bog'lanish",
-                    callback_data=f"contact_{order_id}"
+                    callback_data=f"accept_{order_id}|uid_{user_id}"
                 )
             ]
         ]
+    )
+
+btn_location_keyboard =  ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="📍 Lokatsiyani yuborish", request_location=True)]
+        ],
+        resize_keyboard=True
+    )
+btn_phone_keyboard = ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="📱 Telefon raqamini yuborish", request_contact=True)]
+        ],
+        resize_keyboard=True
     )

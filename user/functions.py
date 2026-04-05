@@ -16,8 +16,9 @@ from user.keyboards import (
 )
 from user.i18n import t
 
-from user.keyboards import language_keyboard, passenger_keyboard
+from user.keyboards import language_keyboard, passenger_keyboard,btn_phone_keyboard, confirm_keyboard, edit_keyboard
 from user.i18n import t
+# from .functions import send_order_to_channel
 
 # /language komandasi
 async def language_command(message: Message, state: FSMContext):
@@ -52,12 +53,17 @@ async def process_firstname(message: Message, state: FSMContext):
 # 2. Familiya qabul qilish
 async def process_lastname(message: Message, state: FSMContext):
     await state.update_data(user_lastname=message.text)
-    await message.answer("Telefon raqamingizni  kiriting\nNamuna: 995673412  yoki +9981232321")
+    await message.answer("Telefon raqamingizni  kiriting\nNamuna: 995673412  yoki +9981232321", reply_markup=btn_phone_keyboard)
     await state.set_state(user_states.user_phone)
 
 # 3. Telefon raqamini qabul qilish
 async def process_phone(message: Message, state: FSMContext):
-    await state.update_data(user_phone=message.text)
+    if message.contact and message.contact.phone_number:
+        phone = str(message.contact.phone_number)
+    else:
+        phone = (message.text or "").strip()
+
+    await state.update_data(user_phone=phone)
 
     # Inline keyboard callback Qayerdan uchun
     from .keyboards import place_keyboard
@@ -89,7 +95,7 @@ async def process_location(message: Message, state: FSMContext):
         await show_order_summary(message, state)
         return
 
-    await message.answer("Nechta odam ketadi? \n Namuna: 2")
+    await message.answer("Nechta odam ketadi? \nNamuna: 2", reply_markup=ReplyKeyboardRemove())
     await state.set_state(user_states.user_people)
     # ODDIY BUYURTMA JARAYONI
     await state.update_data(
@@ -100,7 +106,7 @@ async def process_location(message: Message, state: FSMContext):
 async def show_order_summary(message: Message, state: FSMContext):
     data = await state.get_data()
     summary = (
-        f"✅ So'rovingiz qabul qilindi!\n\n"
+        f"✅ Sizning so'rovingiz!\n\n"
         f"Ism: {data.get('user_firstname')}\n"
         f"Familiya: {data.get('user_lastname')}\n"
         f"Telefon: {data.get('user_phone')}\n"
@@ -140,9 +146,9 @@ async def confirm_send(message: Message, state: FSMContext, bot: Bot):
     SUPERADMIN = int(os.getenv("SUPERADMIN"))
     await bot.send_message(SUPERADMIN, summary)
     new_order = await create_order(message=summary, user_id = int(message.from_user.id))
-    from .functions import send_order_to_channel
+    
 
-    await send_order_to_channel(bot, state, order_id=new_order.uid)
+    await send_order_to_channel(bot, state, order_id=new_order.uid, user_id = message.from_user.id)
 
     await message.answer(
         "✅ So‘rovingiz yuborildi.\n\nHaydovchilarimiz siz bilan bog'lanadi 🚖",
@@ -267,7 +273,7 @@ from user.callback import location_messages, order_texts, order_locations, locat
 
 CHANNEL_ID = "@taxi_test_uz"
 
-async def send_order_to_channel(bot: Bot, state: FSMContext, order_id):
+async def send_order_to_channel(bot: Bot, state: FSMContext, order_id, user_id):
     data = await state.get_data()
     
     location = data.get("user_location")
@@ -277,25 +283,26 @@ async def send_order_to_channel(bot: Bot, state: FSMContext, order_id):
         map_link = f"https://maps.google.com/?q={location.latitude},{location.longitude}"
 
     text = f"""
-🚕 YANGI BUYURTMA #{order_id}
+            🚕 YANGI BUYURTMA #{order_id}
 
-👤 Ism: {data.get('user_firstname')}
-👤 Familiya: {data.get('user_lastname')}
-📞 Telefon: {data.get('user_phone')}
+            👤 Ism: {data.get('user_firstname')}
+            👤 Familiya: {data.get('user_lastname')}
+            📞 Telefon: {data.get('user_phone')}
 
-📍 Qayerdan: {data.get('user_place1')}
-📍 Qayerga: {data.get('user_place2')}
+            📍 Qayerdan: {data.get('user_place1')}
+            📍 Qayerga: {data.get('user_place2')}
 
-👥 Odamlar: {data.get('user_people')}
-📍 Lokatsiya:
-{map_link}
-"""
+            👥 Odamlar: {data.get('user_people')}
+            📍 Lokatsiya:
+            {map_link}
+            """
+
 
     # Asosiy xabar
     msg = await bot.send_message(
         CHANNEL_ID,
         text,
-        reply_markup=receive(order_id)  
+        reply_markup=receive(order_id, user_id)  
     )
 
     # Lokatsiya xabari

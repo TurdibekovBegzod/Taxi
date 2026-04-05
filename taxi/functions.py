@@ -35,13 +35,13 @@ async def change_role_command_answer(message: Message, state: FSMContext):
 
 
 async def to_choose_a_role_answer(message: Message, state: FSMContext):
-    if message.text not in ["Yo'lovchi", "Haydovchi"]:
+    if message.text not in ["👤 Yo'lovchi", "🚖 Haydovchi"]:
         await message.answer("Klaviaturadagi harflarga mos ravishda rolingizni tanlang")
         return
 
     await message.answer(text=f"Sizning rolingiz  {message.text}!")
 
-    if message.text == "Haydovchi":
+    if message.text == "🚖 Haydovchi":
         driver = await crud_commands.get(models.Taxi, {"telegram_id": message.from_user.id})
         if driver:
             await state.clear()

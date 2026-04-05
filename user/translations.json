@@ -13,12 +13,12 @@
   },
 
   "role.passenger": {
-    "uz": "Yo'lovchi",
-    "ru": "Пассажир"
+    "uz": "👤 Yo'lovchi",
+    "ru": "👤 Пассажир"
   },
   "role.driver": {
-    "uz": "Haydovchi",
-    "ru": "Водитель"
+    "uz": "🚖 Haydovchi",
+    "ru": "🚖 Водитель"
   },
 
   "choose.option":{
@@ -27,8 +27,8 @@
   },
 
   "passenger.travel": {
-    "uz": "Sayohat", 
-    "ru": "Поездка"},
+    "uz": "🚖 E’lon yaratish", 
+    "ru": "🚖 E’lon yaratish"},
 
   "passenger.my_requests": {
     "uz": "Mening so'rovlarim", 

@@ -14,7 +14,7 @@ class PhoneFilter(BaseFilter):
         if len(digits) == 9  or (len(digits) == 12 and digits.startswith("998")):
             return True
         
-        await message.answer("❌ Telefon noto'g'ri\n📞 Namuna: +998901234567 yoki 901234567")
+        await message.answer("❌ Telefon noto'g'ri\nNamuna: +998901234567 yoki 901234567")
         return False
 
 class PeopleCountFilter(BaseFilter):

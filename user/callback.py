@@ -3,7 +3,7 @@ from aiogram.types import CallbackQuery
 from user.i18n import t
 from aiogram.fsm.context import FSMContext
 from .states import user_states
-from .keyboards import place_keyboard
+from .keyboards import btn_location_keyboard, place_keyboard
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from data.models import Order
 import uuid
@@ -43,7 +43,7 @@ async def process_place1(call: CallbackQuery, state: FSMContext):
     # bo'yurtma yaratishda
     await state.set_state(user_states.user_place2)
     await call.message.answer(
-        "5️⃣ Qayerga borasiz?",
+        "Qayerga borasiz?",
         reply_markup=place_keyboard("uz", type="to")
     )
 
@@ -53,6 +53,13 @@ async def process_place1(call: CallbackQuery, state: FSMContext):
 async def process_place2(call: CallbackQuery, state: FSMContext):
     place2 = call.data.split("_")[1]
     data = await state.get_data()
+    if data['user_place1'] == place2:
+        await call.answer("❌ Manzillar bir xil bo'lishi mumkin emas!", show_alert=True)
+        await call.message.answer(
+        "Qayerga borasiz?",
+        reply_markup=place_keyboard("uz", type="to")
+        ) 
+        return  
     await state.update_data(user_place2=place2)
 
     # tahrirlash
@@ -66,7 +73,9 @@ async def process_place2(call: CallbackQuery, state: FSMContext):
     await state.set_state(user_states.user_confirm)
 
     await call.message.answer(
-        "6️⃣ Iltimos lokatsiyangizni tashlang:"
+        "Iltimos lokatsiyangizni tashlang 📍:"
+        ,
+        reply_markup=btn_location_keyboard
     )
     await call.answer()
 
@@ -80,14 +89,22 @@ accepted_orders = {}  # order_id -> {"passenger_id": ..., "driver_id": ..., "cha
 resent_orders = set()
 
 async def accept_order(callback: CallbackQuery):
+    driver = await get_driver(int(callback.from_user.id))
+    order_id_side = callback.data.split("|", 1)[0]
+    user_id_side = callback.data.split("|", 1)[1]
+    order_id = order_id_side.replace("accept_", "")
+    user_id = user_id_side.replace("uid_", "")
+    order_id_str = str(order_id)
+
     # Faqat haydovchi tekshiruvi
     if not await is_driver(int(callback.from_user.id)):
         await callback.answer("❌ Bu tugmani faqat haydovchilar bosishi mumkin!", show_alert=True)
         return callback.from_user.id
     
-    driver = await get_driver(int(callback.from_user.id))
-    order_id = uuid.UUID(callback.data.split("_", 1)[1])
-    order_id_str = str(order_id) 
+    if str(driver.telegram_id) == user_id:
+        await callback.answer("❌ Bu buyurtmani qabul qilishga ruxsat yo'q!", show_alert=True)
+        return callback.from_user.id
+
 
     order = await get(Order, {"uid": order_id})
 
