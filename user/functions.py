@@ -58,6 +58,8 @@ async def process_lastname(message: Message, state: FSMContext):
 
 # 3. Telefon raqamini qabul qilish
 async def process_phone(message: Message, state: FSMContext):
+    await message.answer("Telefon raqamingiz qabul qilindi ✅", reply_markup=ReplyKeyboardRemove())
+
     if message.contact and message.contact.phone_number:
         phone = str(message.contact.phone_number)
     else:
@@ -104,6 +106,7 @@ async def process_location(message: Message, state: FSMContext):
 
 # 8. Odamlar soni qabul qilish va yakunlash
 async def show_order_summary(message: Message, state: FSMContext):
+    
     data = await state.get_data()
     summary = (
         f"✅ Sizning so'rovingiz!\n\n"
