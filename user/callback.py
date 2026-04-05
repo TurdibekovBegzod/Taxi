@@ -31,6 +31,14 @@ async def language_callback(callback: CallbackQuery):
 async def process_place1(call: CallbackQuery, state: FSMContext):
     place1 = call.data.split("_")[1]
     data = await state.get_data()
+
+    if data.get('user_place2'):
+        if data['user_place2'] == place1:
+            await call.answer("❌ Manzillar bir xil bo'lishi mumkin emas!", show_alert=True)
+            
+            return
+        
+    
     await state.update_data(user_place1=place1)
 
     # tahrirlash bo'lsa
@@ -55,10 +63,7 @@ async def process_place2(call: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     if data['user_place1'] == place2:
         await call.answer("❌ Manzillar bir xil bo'lishi mumkin emas!", show_alert=True)
-        await call.message.answer(
-        "Qayerga borasiz?",
-        reply_markup=place_keyboard("uz", type="to")
-        ) 
+        
         return  
     await state.update_data(user_place2=place2)
 

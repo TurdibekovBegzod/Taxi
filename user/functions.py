@@ -69,7 +69,7 @@ async def process_phone(message: Message, state: FSMContext):
 
     # Inline keyboard callback Qayerdan uchun
     from .keyboards import place_keyboard
-    await message.answer("Qayerdan?", reply_markup=place_keyboard("uz", type="from"))
+    await message.answer("Qayerdan ketasiz ?", reply_markup=place_keyboard("uz", type="from"))
     await state.set_state(user_states.user_place1)
 
 # 6. Lokatsiya qabul qilish

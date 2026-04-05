@@ -73,7 +73,7 @@ router.message.register(
     PhoneFilter()
 )
 
-router.callback_query.register(process_place1, lambda c: c.data.startswith("place1_"), StateFilter(user_states.user_place1)) 
+router.callback_query.register(process_place1, lambda c: c.data.startswith("place1_"), StateFilter(user_states.user_place1))
 router.callback_query.register(process_place2, lambda c: c.data.startswith("place2_"), StateFilter(user_states.user_place2))
 
 router.message.register(process_location, StateFilter(user_states.user_location))
