@@ -331,12 +331,12 @@ async def channel_handler(message):
 
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="📢 Guruhga o'tish", url=link)]
+            [InlineKeyboardButton(text="📢 Kanal", url=link)]
         ]
     )
 
     await message.answer(
-        f"📢 Shu link orqali guruhga o'tishingiz mumkin:\n{link}",
+        f"📢 Shu link orqali kanalga o'tishingiz mumkin:\n{link}",
         reply_markup=keyboard
     )
 

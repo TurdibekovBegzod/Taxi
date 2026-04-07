@@ -24,7 +24,7 @@ def passenger_keyboard(user_lang: str):
                 KeyboardButton(text=t(user_lang, "passenger.travel"))
             ],
             [
-                KeyboardButton(text="🗪 Guruhga o'tish")
+                KeyboardButton(text="📢 Kanalga o'tish")
             ],
             [
                 KeyboardButton(text=t(user_lang, "passenger.complaints"))

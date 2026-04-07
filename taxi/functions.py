@@ -18,12 +18,7 @@ from data import crud_commands, models
 
 
 async def start_command_answer(message: Message, bot: Bot, state: FSMContext):
-    await message.answer(text="Botimizga xush kelibsiz!")
-    await message.answer(
-        text="Agar tilni o'zgartirmoqchi bo'lsangiz /language ni bosing.\n"
-             "Aks holda davom eting (O'zbek tilida)."
-    )
-    await message.answer(text="Rolingizni tanlang!", reply_markup=show_role_buttons)
+    await message.answer(text="Botimizga xush kelibsiz\n\nRolingizni tanlang!", reply_markup=show_role_buttons)
     await state.clear()
     await state.set_state(taxi_states.choosing_role)
 
@@ -127,7 +122,7 @@ async def info_answer(message: Message, state: FSMContext):
         f"Mashina modeli: {driver.car_model}\n"
         f"Mashina raqami: {driver.car_number}\n"
     )
-    summary += "\n\nO'zgartirish uchun quyidagi tugmalardan birini tanlang."
+    
     await message.answer(summary, parse_mode="HTML")
 
 

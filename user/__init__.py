@@ -129,6 +129,6 @@ router.callback_query.register(client_no, F.data.startswith("client_no_"))
 
 # ======================
 # BOSHQA HANDLERLAR
-router.message.register(channel_handler, F.text == "🗪 Guruhga o'tish")
+router.message.register(channel_handler, F.text == "📢 Kanalga o'tish")
 router.message.register(complaints_start, lambda msg: msg.text == "Shikoyatlar va takliflar")
 router.message.register(complaints_handler, StateFilter(user_states.complaint_text))

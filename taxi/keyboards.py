@@ -41,7 +41,7 @@ taxi_profile = ReplyKeyboardMarkup(
             KeyboardButton(text = "📄 Ma'lumot"), KeyboardButton(text = "📝 Ma'lumotlarni o'zgartirish")
         ],
         [
-            KeyboardButton(text = "🗪 Guruhga o'tish")
+            KeyboardButton(text = "📢 Kanalga o'tish")
         ],
         [
             KeyboardButton(text = "Shikoyatlar va takliflar")
