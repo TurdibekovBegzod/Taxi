@@ -67,5 +67,13 @@ async def delete_order(message_uid):
             return True
         
         return False
+    
+async def get_order(order_id) -> Order:
+    async with AsyncSession(engine) as session:
+        result = await session.execute(
+            select(Order).where(Order.uid == order_id)
+        )
+        order = result.scalar_one_or_none()
+        return order
 
 

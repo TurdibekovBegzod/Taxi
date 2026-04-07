@@ -63,7 +63,6 @@ async def main():
 
     await bot.set_my_commands([
         BotCommand(command="/start", description="Botni ishga tushirish"),
-        BotCommand(command="/language", description="Til tanlash"),
         BotCommand(command ="/change_role", description="Foydalanuvchi darajasini o'zgartirish")
     ])
 

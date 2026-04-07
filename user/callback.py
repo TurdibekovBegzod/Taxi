@@ -12,8 +12,9 @@ from user.my_scheduler import scheduler
 from user.keyboards import receive
 
 from data.driver_check import is_driver, get_driver
-from data.crud_commands import get, delete_order
+from data.crud_commands import get, delete_order, get_order
 from data.models import User
+
 
 
 async def language_callback(callback: CallbackQuery):
@@ -193,18 +194,29 @@ async def accept_order(callback: CallbackQuery):
 
 
     # ====== 40 sekunddan keyin eslatma ======
-    run_time = datetime.now(timezone.utc) + timedelta(minutes=10)
+    
+    ask_request_time = datetime.now(timezone.utc) + timedelta(minutes = 5)
+    send_request_time = datetime.now(timezone.utc) + timedelta(minutes = 20)
 
     scheduler.add_job(
         send_followup_wrapper,
         trigger="date",
-        run_date=run_time,
+        run_date=ask_request_time,
         kwargs={
             "bot": callback.bot,
             "order_id": order_id_str
         },
         id=f"followup_{order_id_str}",
         replace_existing=True
+    )
+    scheduler.add_job(
+        send_request,
+        trigger="date",
+        run_date=send_request_time,
+        kwargs={
+            "bot": callback.bot,
+            "order_id": order_id_str
+        }
     )
 
 
@@ -360,6 +372,9 @@ async def send_followup_wrapper(bot, order_id):
     print("JOB ISHLADI:", order_id)
     await send_followup_questions(bot, order_id)
 
+async def send_request(bot, order_id):
+    await resend_order_to_group(bot, order_id)
+
 
 async def resend_order_to_group(bot, order_id: str):
     data = accepted_orders.get(order_id)
@@ -376,12 +391,18 @@ async def resend_order_to_group(bot, order_id: str):
 
     if not text:
         return
+    
+    order = await get_order(order_id)
+    if not order:
+        print("Buyurtma topilmadi DB da:", order_id)
+        return
+    user_id = order.user_id
 
     # ✅ 1. TEXT yuboramiz
     msg = await bot.send_message(
         chat_id=chat_id,
         text=text,
-        reply_markup=receive(order_id)
+        reply_markup=receive(order_id, user_id)
     )
 
     # ✅ 2. AGAR LOCATION BO‘LSA yuboramiz
