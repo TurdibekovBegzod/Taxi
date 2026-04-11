@@ -388,7 +388,7 @@ async def back_to_choose_option(message : Message, state : FSMContext):
     await state.clear()
 
     user_lang = "uz"
-    await message.answer("Asosiy oynaga o'tildi", reply_markup=passenger_keyboard(user_lang))
+    await message.answer("Asosiy menyuga qaytildi.", reply_markup=passenger_keyboard(user_lang))
 
     await state.set_state(user_states.choose_option)
 
