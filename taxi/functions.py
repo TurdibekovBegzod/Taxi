@@ -6,7 +6,8 @@ from .keyboards import (
     get_contact,
     confirm,
     taxi_profile,
-    edit_profile
+    edit_profile,
+    btn_back
 )
 
 from aiogram.fsm.context import FSMContext
@@ -70,7 +71,7 @@ async def get_firstname_answer(message: Message, state: FSMContext):
 async def get_lastname_answer(message: Message, state: FSMContext):
     await state.update_data(lastname=message.text)
     await message.answer("Iltimos, kontaktni yuboring!", reply_markup=get_contact)
-    await message.answer("Telefon raqamini ushbu formatlarda yuboring :\n       +998901234567 yoki 0901234567.")
+    await message.answer("Telefon raqamini ushbu formatlarda yuboring :\n+998901234567 yoki 901234567 bu ko'rinishda.")
     await state.set_state(taxi_states.contact)
 
  
@@ -88,7 +89,6 @@ async def get_contact_answer(message: Message, state: FSMContext):
 async def get_car_model_answer(message: Message, state: FSMContext):
     await state.update_data(car_model=message.text)
     await message.answer("Iltimos, mashinangiz raqamini kiriting!")
-    await message.answer("Mashina raqamini ushbu formatlarda kiriting :\n       41A111AA yoki 01A1234")
     await state.set_state(taxi_states.car_number)
 
 
@@ -116,11 +116,11 @@ async def info_answer(message: Message, state: FSMContext):
 
     summary = (
         f"👤 <b>Profil ma'lumotlari</b>\n"
-        f"Ism: {driver.firstname}\n"
-        f"Familiya: {driver.lastname}\n"
-        f"Telefon: {driver.phone_number}\n"
-        f"Mashina modeli: {driver.car_model}\n"
-        f"Mashina raqami: {driver.car_number}\n"
+        f"Ism: <b>{driver.firstname}</b>\n"
+        f"Familiya: <b>{driver.lastname}</b>\n"
+        f"Telefon: <b>{driver.phone_number}</b>\n"
+        f"Mashina modeli: <b>{driver.car_model}</b>\n"
+        f"Mashina raqami: <b>{driver.car_number}</b>\n"
     )
     
     await message.answer(summary, parse_mode="HTML")
@@ -130,34 +130,49 @@ async def update_info_answer(message: Message, state: FSMContext):
     await message.answer("Ma’lumotlaringizni o‘zgartirishingiz mumkin", reply_markup=edit_profile)
     await state.set_state(taxi_states.edit_confirm)
 
+async def back_to_edit_confirm(message: Message, state: FSMContext):
+    await state.clear()
+    await message.answer("Ma’lumotlaringizni o‘zgartirishingiz mumkin", reply_markup=edit_profile)
+    await state.set_state(taxi_states.edit_confirm)
 
 async def choose_edit_firstname(message: Message, state: FSMContext):
     await state.clear()
-    await message.answer("Yangi ismingizni kiriting:", reply_markup=ReplyKeyboardRemove())
+    driver = await crud_commands.get(models.Taxi, {"telegram_id": message.from_user.id})
+
+    await message.answer(f"Sizning ismingiz <b>{driver.firstname}</b>\n"
+                         f"Yangi ismingizni kiriting:", reply_markup=btn_back, parse_mode="HTML")
     await state.set_state(taxi_states.edit_firstname)
 
 
 async def choose_edit_lastname(message: Message, state: FSMContext):
     await state.clear()
-    await message.answer("Yangi familiyangizni kiriting:", reply_markup=ReplyKeyboardRemove())
+    driver = await crud_commands.get(models.Taxi, {"telegram_id": message.from_user.id})
+    await message.answer(f"Sizning familiyangiz <b>{driver.lastname}</b>\n"
+                         f"Yangi familiyangizni kiriting:", reply_markup=btn_back, parse_mode="HTML")
     await state.set_state(taxi_states.edit_lastname)
 
 
 async def choose_edit_phone(message: Message, state: FSMContext):
     await state.clear()
-    await message.answer("Iltimos telefon kontaktingizni yuboring yoki raqamingizni yozing:", reply_markup=get_contact)
+    driver = await crud_commands.get(models.Taxi, {"telegram_id": message.from_user.id})
+    await message.answer(f"Sizning telefon raqamingiz <b>{driver.phone_number}</b>\n"
+                         f"Yangi telefon raqamingizni kiriting:", reply_markup=btn_back, parse_mode="HTML")
     await state.set_state(taxi_states.edit_phone)
 
 
 async def choose_edit_car_model(message: Message, state: FSMContext):
     await state.clear()
-    await message.answer("Yangi mashina modelini kiriting:", reply_markup=ReplyKeyboardRemove())
+    driver = await crud_commands.get(models.Taxi, {"telegram_id": message.from_user.id})
+    await message.answer(f"Sizning mashina modelingiz <b>{driver.car_model}</b>\n"
+                         f"Yangi mashina modelini kiriting:", reply_markup=btn_back, parse_mode="HTML")
     await state.set_state(taxi_states.edit_car_model)
 
 
 async def choose_edit_car_number(message: Message, state: FSMContext):
     await state.clear()
-    await message.answer("Yangi mashina raqamini kiriting:", reply_markup=ReplyKeyboardRemove())
+    driver = await crud_commands.get(models.Taxi, {"telegram_id": message.from_user.id})
+    await message.answer(f"Sizning mashina raqamingiz <b>{driver.car_number}</b>\n"
+                         f"Yangi mashina raqamini kiriting:", reply_markup=btn_back, parse_mode="HTML")
     await state.set_state(taxi_states.edit_car_number)
 
 

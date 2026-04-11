@@ -29,43 +29,7 @@ class PhoneFilter(BaseFilter):
         return False
 
 
-class CarNumberFilter(BaseFilter):
-    async def __call__(self, message: Message) -> bool:
-        if not message.text:
-            await message.answer("🚗 Mashina raqamini kiriting!\nMisol: 01A123AA")
-            return False
-        
-        car_number = message.text.strip().upper()
-        car_number = car_number.replace(' ', '').replace('-', '')
-        
-        # Harflar va raqamlardan iboratligini tekshirish
-        if not re.match(r'^[A-Z0-9]+$', car_number):
-            await message.answer(
-                "❌ Mashina raqami faqat harf va raqamlardan iborat bo'lishi kerak!\n"
-                "Misol: 01A123AA"
-            )
-            return False
-        
-        # Barcha mumkin bo'lgan patternlar
-        patterns = [
-            # Eski format: 2 raqam + 1 harf + 3-4 raqam + 0-2 harf
-            r'^\d{2}[A-Z]\d{3,4}[A-Z]{0,2}$',
-            # Yangi format: 1 raqam + 1 harf + 3-4 raqam + 0-2 harf
-            r'^\d[A-Z]\d{3,4}[A-Z]{0,2}$',
-            # Toshkent: 2 raqam + 2 harf + 3-4 raqam
-            r'^\d{2}[A-Z]\d{3}(CD|TD)$',
-        ]
-        
-        for pattern in patterns:
-            if re.match(pattern, car_number):
-                return True
-        
-        await message.answer(
-            "❌ Mashina raqami noto'g'ri formatda!\n\n"
-            "✅ Qabul qilinadigan formatlar:\n"
-            "📝 Misol: \n 01A123AA yoki 1A1234A"
-        )
-        return False
+
 
 def format_phone_number(phone: str) -> str:
     """Telefon raqamni +998951197705 yoki 951197705 formatida kriting"""

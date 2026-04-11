@@ -10,6 +10,7 @@ DOCKER_DB_URL = os.getenv("DOCKER_DB_URL")
 LOCAL_DB_URL = os.getenv("LOCAL_DB_URL")
 
 # Centralized DB config
+print(LOCAL_DB_URL)
 DATABASE_URL = DOCKER_DB_URL
 
 engine = create_async_engine(DATABASE_URL, echo=False)

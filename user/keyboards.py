@@ -45,6 +45,26 @@ def place_keyboard(user_lang: str, type: str = "from"):
         [
             InlineKeyboardButton(text="Toshkent", callback_data=f"{prefix}_Toshkent"),
             InlineKeyboardButton(text="Xorazm", callback_data=f"{prefix}_Xorazm")
+        ],
+        [
+            InlineKeyboardButton(text="Samarqand", callback_data=f"{prefix}_Samarqand"),
+            InlineKeyboardButton(text="Buxoro", callback_data=f"{prefix}_Buxoro")
+        ],
+        [
+            InlineKeyboardButton(text="Farg'ona", callback_data=f"{prefix}_Farg'ona"),
+            InlineKeyboardButton(text="Andijon", callback_data=f"{prefix}_Andijon")
+        ],
+        [
+            InlineKeyboardButton(text="Namangan", callback_data=f"{prefix}_Namangan"),
+            InlineKeyboardButton(text="Qashqadaryo", callback_data=f"{prefix}_Qashqadaryo")
+        ],
+        [
+            InlineKeyboardButton(text="Navoiy", callback_data=f"{prefix}_Navoiy"),
+            InlineKeyboardButton(text="Surxondaryo", callback_data=f"{prefix}_Surxondaryo")
+        ],
+        [
+            InlineKeyboardButton(text="Jizzax", callback_data=f"{prefix}_Jizzax"),
+            InlineKeyboardButton(text="Sirdaryo", callback_data=f"{prefix}_Sirdaryo")
         ]
     ])
 
