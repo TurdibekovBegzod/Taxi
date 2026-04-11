@@ -65,3 +65,12 @@ btn_back = ReplyKeyboardMarkup(
     ],
     resize_keyboard=True
 )
+btn_back_and_phone = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="◀️ Orqaga"), KeyboardButton(text="📱 Telefon raqamini yuborish", request_contact=True)]
+    ],
+
+    resize_keyboard=True
+)
+
+        

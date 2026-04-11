@@ -121,3 +121,10 @@ btn_phone_keyboard = ReplyKeyboardMarkup(
         ],
         resize_keyboard=True
     )
+
+btn_back = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="◀️ Orqaga")]
+    ],
+    resize_keyboard=True
+)

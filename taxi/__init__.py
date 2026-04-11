@@ -1,5 +1,6 @@
 from aiogram import Router, F
 from .functions import (
+    complaints_start,
     start_command_answer,
     to_choose_a_role_answer,
     sign_up_answer,
@@ -23,7 +24,8 @@ from .functions import (
     get_new_phone_answer,
     get_new_car_model_answer,
     get_new_car_number_answer,
-    back_to_edit_confirm
+    back_to_edit_confirm,
+    complaints_handler
 )
 from .filters import PhoneFilter
 from aiogram.filters import CommandStart, Command
@@ -43,9 +45,12 @@ router.message.register(get_car_model_answer, taxi_states.car_model)
 router.message.register(get_car_number_answer, taxi_states.car_number)
 router.message.register(confirm_answer, taxi_states.confirm, F.text == "Tasdiqlash")
 
-router.message.register(info_answer, F.text == "📄 Ma'lumot")
-router.message.register(update_info_answer, F.text == "📝 Ma'lumotlarni o'zgartirish")
+router.message.register(complaints_start,taxi_states.profile, F.text == "Shikoyatlar va takliflar")
+router.message.register(back_to_profile, taxi_states.complaint_text, F.text == "◀️ Orqaga")
+router.message.register(complaints_handler, taxi_states.complaint_text)
 
+router.message.register(info_answer, taxi_states.profile, F.text == "📄 Ma'lumot")
+router.message.register(update_info_answer, taxi_states.profile, F.text == "📝 Ma'lumotlarni o'zgartirish")
 router.message.register(choose_edit_firstname, taxi_states.edit_confirm, F.text == "Ism")
 router.message.register(back_to_edit_confirm, taxi_states.edit_firstname, F.text == "◀️ Orqaga")
 router.message.register(choose_edit_lastname, taxi_states.edit_confirm, F.text == "Familiya")

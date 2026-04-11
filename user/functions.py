@@ -12,7 +12,8 @@ from user.keyboards import (
     language_keyboard,
     passenger_keyboard,
     confirm_keyboard,
-    edit_keyboard
+    edit_keyboard,
+    btn_back
 )
 from user.i18n import t
 
@@ -341,28 +342,55 @@ async def channel_handler(message):
     )
 
 async def complaints_start(message, state):
-    await state.set_state(user_states.complaint_text)
+    await state.clear()
 
     await message.answer(
-        "✍️ Shikoyat va takliflaringizni yuborishingiz mumkin.\n\n"
-        " Faqat hammasini bitta yozishda Yozib yuboring 👇"
+        "✍️ Shikoyat va takliflaringizni yuborishingiz mumkin.",
+        reply_markup=btn_back
     )
 
-async def complaints_handler(message, state, bot):
-    ADMIN_CHAT_ID = -1003780044555 
+    await state.set_state(user_states.complaint_text)
+
+async def complaints_handler(message : Message, state : FSMContext, bot):
+    ADMIN_CHAT_ID = -1003780044555
 
     user = message.from_user
 
-    text = (
+    caption = (
         f"📩 Yangi shikoyat/taklif\n\n"
         f"👤 User: {user.full_name}\n"
         f"🆔 ID: {user.id}\n\n"
-        f"💬 Xabar:\n{message.text}"
     )
 
-    await bot.send_message(ADMIN_CHAT_ID, text)
-    await message.answer("✅ Xabaringiz qabul qilindi. Rahmat!")
-    await state.clear()  # holatni tozalash
+    if message.text:
+        text = caption + f"💬 Xabar:\n{message.text}"
+        await bot.send_message(ADMIN_CHAT_ID, text)
+
+    elif message.photo:
+        photo = message.photo[-1].file_id
+        text = caption + f"💬 Caption:\n{message.caption or 'Yo‘q'}"
+        await bot.send_photo(ADMIN_CHAT_ID, photo, caption=text)
+
+    elif message.video:
+        video = message.video.file_id
+        text = caption + f"💬 Caption:\n{message.caption or 'Yo‘q'}"
+        await bot.send_video(ADMIN_CHAT_ID, video, caption=text)
+
+    elif message.document:
+        doc = message.document.file_id
+        text = caption + f"💬 Caption:\n{message.caption or 'Yo‘q'}"
+        await bot.send_document(ADMIN_CHAT_ID, doc, caption=text)
+
+    await message.answer("✅ Xabaringiz qabul qilindi. Rahmat!", reply_markup=btn_back)
+    
+
+async def back_to_choose_option(message : Message, state : FSMContext):
+    await state.clear()
+
+    user_lang = "uz"
+    await message.answer("Asosiy oynaga o'tildi", reply_markup=passenger_keyboard(user_lang))
+
+    await state.set_state(user_states.choose_option)
 
 
 

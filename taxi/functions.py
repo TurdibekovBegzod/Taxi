@@ -7,7 +7,8 @@ from .keyboards import (
     confirm,
     taxi_profile,
     edit_profile,
-    btn_back
+    btn_back,
+    btn_back_and_phone
 )
 
 from aiogram.fsm.context import FSMContext
@@ -42,6 +43,7 @@ async def to_choose_a_role_answer(message: Message, state: FSMContext):
         if driver:
             await state.clear()
             await message.answer(text=f"Salom, {driver.firstname}👋", reply_markup=taxi_profile)
+            await state.set_state(taxi_states.profile)
             return
 
         await message.answer(
@@ -156,7 +158,7 @@ async def choose_edit_phone(message: Message, state: FSMContext):
     await state.clear()
     driver = await crud_commands.get(models.Taxi, {"telegram_id": message.from_user.id})
     await message.answer(f"Sizning telefon raqamingiz <b>{driver.phone_number}</b>\n"
-                         f"Yangi telefon raqamingizni kiriting:", reply_markup=btn_back, parse_mode="HTML")
+                         f"Yangi telefon raqamingizni kiriting:", reply_markup=btn_back_and_phone, parse_mode="HTML")
     await state.set_state(taxi_states.edit_phone)
 
 
@@ -177,8 +179,8 @@ async def choose_edit_car_number(message: Message, state: FSMContext):
 
 
 async def back_to_profile(message: Message, state: FSMContext):
-    await state.clear()
     await message.answer("Asosiy menyuga qaytildi.", reply_markup=taxi_profile)
+    await state.set_state(taxi_states.profile)
 
 
 async def get_new_firstname_answer(message: Message, state: FSMContext):
@@ -210,3 +212,47 @@ async def get_new_car_number_answer(message: Message, state: FSMContext):
     await crud_commands.update(models.Taxi, {'telegram_id': message.from_user.id}, {'car_number': message.text})
     await message.answer("Mashina raqamingiz yangilandi ✅", reply_markup=edit_profile)
     await state.set_state(taxi_states.edit_confirm)
+
+async def complaints_start(message : Message, state : FSMContext):
+    await state.clear()
+
+    await message.answer(
+        "✍️ Shikoyat va takliflaringizni yuborishingiz mumkin.",
+        reply_markup=btn_back
+    )
+
+    await state.set_state(taxi_states.complaint_text)
+
+async def complaints_handler(message : Message, state : FSMContext, bot):
+    
+    ADMIN_CHAT_ID = -1003780044555
+
+    user = message.from_user
+
+    caption = (
+        f"📩 Yangi shikoyat/taklif\n\n"
+        f"👤 User: {user.full_name}\n"
+        f"🆔 ID: {user.id}\n\n"
+    )
+
+    if message.text:
+        text = caption + f"💬 Xabar:\n{message.text}"
+        await bot.send_message(ADMIN_CHAT_ID, text)
+
+    elif message.photo:
+        photo = message.photo[-1].file_id
+        text = caption + f"💬 Caption:\n{message.caption or 'Yo‘q'}"
+        await bot.send_photo(ADMIN_CHAT_ID, photo, caption=text)
+
+    elif message.video:
+        video = message.video.file_id
+        text = caption + f"💬 Caption:\n{message.caption or 'Yo‘q'}"
+        await bot.send_video(ADMIN_CHAT_ID, video, caption=text)
+
+    elif message.document:
+        doc = message.document.file_id
+        text = caption + f"💬 Caption:\n{message.caption or 'Yo‘q'}"
+        await bot.send_document(ADMIN_CHAT_ID, doc, caption=text)
+
+    await message.answer("✅ Xabaringiz qabul qilindi. Rahmat!", reply_markup=btn_back)
+    

@@ -20,7 +20,8 @@ from .functions import (
                         save_edited_value,
                         channel_handler,
                         complaints_start,
-                        complaints_handler
+                        complaints_handler,
+                        back_to_choose_option
 )
 
 from .callback import (
@@ -130,5 +131,6 @@ router.callback_query.register(client_no, F.data.startswith("client_no_"))
 # ======================
 # BOSHQA HANDLERLAR
 router.message.register(channel_handler, F.text == "📢 Kanalga o'tish")
-router.message.register(complaints_start, lambda msg: msg.text == "Shikoyatlar va takliflar")
+router.message.register(complaints_start, user_states.choose_option, lambda msg: msg.text == "Shikoyatlar va takliflar")
+router.message.register(back_to_choose_option, user_states.complaint_text, F.text == "◀️ Orqaga")
 router.message.register(complaints_handler, StateFilter(user_states.complaint_text))
