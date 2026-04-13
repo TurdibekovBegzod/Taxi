@@ -65,6 +65,9 @@ def place_keyboard(user_lang: str, type: str = "from"):
         [
             InlineKeyboardButton(text="Jizzax", callback_data=f"{prefix}_Jizzax"),
             InlineKeyboardButton(text="Sirdaryo", callback_data=f"{prefix}_Sirdaryo")
+        ],
+        [
+            InlineKeyboardButton(text="Qoraqalpog'iston", callback_data=f"{prefix}_Qoraqalpog'iston")
         ]
     ])
 
