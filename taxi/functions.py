@@ -108,6 +108,7 @@ async def confirm_answer(message: Message, state: FSMContext):
     await crud_commands.add(model=models.Taxi, data=data)
     await message.answer("Barcha ma’lumotlaringiz saqlandi ✅!", reply_markup=taxi_profile)
     await state.clear()
+    await state.set_state(taxi_states.profile)
 
 
 async def info_answer(message: Message, state: FSMContext):
