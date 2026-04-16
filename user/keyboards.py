@@ -114,13 +114,15 @@ def receive(order_id, user_id):
 
 btn_location_keyboard =  ReplyKeyboardMarkup(
         keyboard=[
-            [KeyboardButton(text="📍 Lokatsiyani yuborish", request_location=True)]
+            [KeyboardButton(text="📍 Lokatsiyani yuborish", request_location=True)],
+            [KeyboardButton(text="❌ Bekor qilish")]
         ],
         resize_keyboard=True
     )
 btn_phone_keyboard = ReplyKeyboardMarkup(
         keyboard=[
-            [KeyboardButton(text="📱 Telefon raqamini yuborish", request_contact=True)]
+            [KeyboardButton(text="📱 Telefon raqamini yuborish", request_contact=True)],
+            [KeyboardButton(text="❌ Bekor qilish")]
         ],
         resize_keyboard=True
     )
@@ -128,6 +130,14 @@ btn_phone_keyboard = ReplyKeyboardMarkup(
 btn_back = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="◀️ Orqaga")]
+    ],
+    resize_keyboard=True
+)
+
+
+cancel_keyboard = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="❌ Bekor qilish")]
     ],
     resize_keyboard=True
 )

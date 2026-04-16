@@ -1,9 +1,11 @@
 import re
 from aiogram.filters import BaseFilter
 from aiogram.types import Message
+from aiogram.fsm.context import FSMContext
 from datetime import datetime
+from .functions import check_cancel
 class PhoneFilter(BaseFilter):
-    async def __call__(self, message: Message) -> bool:
+    async def __call__(self, message: Message, state: FSMContext) -> bool:
         if not message.text and not message.contact:
             await message.answer("📞 Telefon raqamingizni kiriting\nNamuna: +998901234567 yoki 901234567")
             return False
@@ -18,7 +20,7 @@ class PhoneFilter(BaseFilter):
         return False
 
 class PeopleCountFilter(BaseFilter):
-    async def __call__(self, message: Message) -> bool:
+    async def __call__(self, message: Message, state: FSMContext) -> bool:
         text = (message.text or "").strip()
         
         if not text or not text.isdigit():

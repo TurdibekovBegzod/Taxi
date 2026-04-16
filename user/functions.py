@@ -7,6 +7,8 @@ from .states import user_states
 from taxi.states import taxi_states
 from data.crud_commands import create_order
 import os
+from .keyboards import place_keyboard
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
 
 from user.keyboards import (
     language_keyboard,
@@ -17,7 +19,7 @@ from user.keyboards import (
 )
 from user.i18n import t
 
-from user.keyboards import language_keyboard, passenger_keyboard,btn_phone_keyboard, confirm_keyboard, edit_keyboard
+from user.keyboards import language_keyboard, passenger_keyboard,btn_phone_keyboard, confirm_keyboard, edit_keyboard, cancel_keyboard
 from user.i18n import t
 # from .functions import send_order_to_channel
 
@@ -42,20 +44,26 @@ async def passenger_start(message: Message, state: FSMContext):
 
 # Sayohat tugmasi bosilganda 
 async def travel_start(message: Message, state: FSMContext):
-    await message.answer("Ismingizni kiriting:", reply_markup=ReplyKeyboardRemove())
+    await message.answer("Ismingizni kiriting:", reply_markup=cancel_keyboard)
     await state.set_state(user_states.user_firstname)
 
 # 1. Ism qabul qilish
 async def process_firstname(message: Message, state: FSMContext):
+    if await check_cancel(message, state):
+        return
     await state.update_data(user_firstname=message.text)
-    await message.answer("Familiyangizni kiriting:")
+    await message.answer("Familiyangizni kiriting:", reply_markup=cancel_keyboard)
     await state.set_state(user_states.user_lastname)
+
 
 # 2. Familiya qabul qilish
 async def process_lastname(message: Message, state: FSMContext):
+    if await check_cancel(message, state):
+        return
     await state.update_data(user_lastname=message.text)
     await message.answer("Telefon raqamingizni  kiriting\nNamuna: 995673412  yoki +9981232321", reply_markup=btn_phone_keyboard)
     await state.set_state(user_states.user_phone)
+
 
 # 3. Telefon raqamini qabul qilish
 async def process_phone(message: Message, state: FSMContext):
@@ -71,15 +79,20 @@ async def process_phone(message: Message, state: FSMContext):
     # Inline keyboard callback Qayerdan uchun
     from .keyboards import place_keyboard
     await message.answer("Qayerdan ketasiz ?", reply_markup=place_keyboard("uz", type="from"))
+    # await message.answer("Manzilingiz qabul qilindi ", reply_markup=cancel_keyboard)
     await state.set_state(user_states.user_place1)
+
 
 # 6. Lokatsiya qabul qilish
 async def process_location(message: Message, state: FSMContext):
+    if await check_cancel(message, state):
+        return
 
     # agar lokatsiya yuborilmasa
     if not message.location:
         await message.answer("📍 Iltimos lokatsiyani tugma orqali yuboring!")
         return
+   
 
     data = await state.get_data()
     editing_field = data.get("editing_field")
@@ -98,8 +111,10 @@ async def process_location(message: Message, state: FSMContext):
         await show_order_summary(message, state)
         return
 
-    await message.answer("Nechta odam ketadi? \nNamuna: 2", reply_markup=ReplyKeyboardRemove())
+    await message.answer("Nechta odam ketadi? \nNamuna: 2", reply_markup=cancel_keyboard)
     await state.set_state(user_states.user_people)
+    if await check_cancel(message, state):
+        return
     # ODDIY BUYURTMA JARAYONI
     await state.update_data(
         user_location=message.location
@@ -123,14 +138,17 @@ async def show_order_summary(message: Message, state: FSMContext):
     await state.set_state(user_states.confirm_order)
 
 async def process_people(message: Message, state: FSMContext):
+    if await check_cancel(message, state):
+        return
     people_count = message.text.strip()
     
     # Faqat raqam ekanligini tekshirish
     if not people_count.isdigit():
         await message.answer("❌ Iltimos, faqat raqam kiriting!\nMasalan: 5")
         return 
+
     
-    # Ma'lumotni saqlash
+    # Ma'lumotни saqlash
     await state.update_data(user_people=int(people_count))
     await show_order_summary(message, state)
 
@@ -178,8 +196,8 @@ async def edit_order(message: Message, state: FSMContext):
     await state.set_state(user_states.edit_field)
 
 async def choose_edit_field(message: Message, state: FSMContext):
-    from .keyboards import place_keyboard
-    from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
+    if await check_cancel(message, state):
+        return
 
     if message.text == "⬅️ Orqaga":
         await show_order_summary(message, state)
@@ -224,6 +242,7 @@ async def choose_edit_field(message: Message, state: FSMContext):
             "📍 Lokatsiyangizni yuboring:",
             reply_markup=location_keyboard
         )
+
 
         await state.set_state(user_states.user_location)
         return
@@ -273,9 +292,6 @@ CHANNEL_ID = "@taxi_test_uz"
 from aiogram import Bot
 from aiogram.fsm.context import FSMContext
 from user.keyboards import receive
-from user.callback import location_messages, order_texts, order_locations, location_messages
-
-CHANNEL_ID = "@taxi_test_uz"
 
 async def send_order_to_channel(bot: Bot, state: FSMContext, order_id, user_id):
     data = await state.get_data()
@@ -316,11 +332,15 @@ async def send_order_to_channel(bot: Bot, state: FSMContext, order_id, user_id):
             latitude=location.latitude,
             longitude=location.longitude
         )
-        location_messages[str(order_id)] = loc_msg.message_id
+        from data.crud_commands import update
+        from data.models import Order
+        await update(Order, {"uid": order_id}, {
+            "message": text,
+            "lat": location.latitude if location else None,
+            "lon": location.longitude if location else None,
+            "location_message_id": loc_msg.message_id if location else None
+        })
 
-        order_locations[str(order_id)] = (location.latitude, location.longitude)
-
-    order_texts[str(order_id)] = text
 
     await state.update_data(order_id=order_id)
     return order_id
@@ -392,5 +412,13 @@ async def back_to_choose_option(message : Message, state : FSMContext):
 
     await state.set_state(user_states.choose_option)
 
-
-
+async def check_cancel(message: Message, state: FSMContext):
+    if message.text == "❌ Bekor qilish":
+        await state.clear()
+        await message.answer(
+            "❌ Bekor qilindi",
+            reply_markup=passenger_keyboard("uz")
+        )
+        await state.set_state(user_states.choose_option)
+        return True
+    return False

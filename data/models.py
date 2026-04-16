@@ -53,6 +53,18 @@ class Order(Base):
     uid = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4)
     message = Column(String)
     user_id = Column(BIGINT)   
+
+    # Yangi fieldlar
+    lat = Column(Float, nullable=True)
+    lon = Column(Float, nullable=True)
+
+    location_message_id = Column(BIGINT, nullable=True)
+    driver_id = Column(BIGINT, nullable=True)
+    chat_id = Column(BIGINT, nullable=True)
+    status = Column(String, default="new")
+
+    resent = Column(Integer, default=0)
+
     def __repr__(self):
         return f"<Order uid={self.uid} message={self.message!r} user_id={self.user_id}>"
 

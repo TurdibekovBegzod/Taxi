@@ -12,7 +12,7 @@ from user.my_scheduler import scheduler
 from user.keyboards import receive
 
 from data.driver_check import is_driver, get_driver
-from data.crud_commands import get, delete_order, get_order
+from data.crud_commands import get, delete_order, get_order, update
 from data.models import User
 
 
@@ -88,12 +88,6 @@ async def process_place2(call: CallbackQuery, state: FSMContext):
 # Bog'lanish va Qabul qilish
 
 
-location_messages = {}   # global dict
-order_texts = {}      # order_id -> groupga yuborilgan text
-order_locations = {}  # order_id -> (lat, lon)
-accepted_orders = {}  # order_id -> {"passenger_id": ..., "driver_id": ..., "chat_id": ...}
-resent_orders = set()
-
 async def accept_order(callback: CallbackQuery):
     driver = await get_driver(int(callback.from_user.id))
     order_id_side = callback.data.split("|", 1)[0]
@@ -118,19 +112,18 @@ async def accept_order(callback: CallbackQuery):
         await callback.answer("❌ Buyurtma topilmadi!", show_alert=True)
         return
 
-    passenger_id = order.user_id
-    accepted_orders[str(order_id)] = {
-    "passenger_id": passenger_id,
-    "driver_id": driver.telegram_id,
-    "chat_id": callback.message.chat.id,
-    "resent": False   # 👈 yangi
-}
+    await update(Order, {"uid": order_id}, {
+        "driver_id": driver.telegram_id,
+        "chat_id": callback.message.chat.id,
+        "status": "accepted",
+        "resent": 0
+})
 
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(
                 text="💬 Telegramda yozish",
-                url=f"tg://user?id={passenger_id}"
+                url=f"tg://user?id={user_id}"
             )
         ],
         [
@@ -153,7 +146,8 @@ async def accept_order(callback: CallbackQuery):
     )
     # ====== YO‘LOVCHIGA XABAR ======
     await callback.bot.send_message(
-        chat_id=passenger_id,
+        chat_id=user_id,
+
         text=(
             "🚕 Sizning so'rovingiz taxi tomonidan ko'rib chiqilmoqda\n\n"
             f"👤 Taxi: {driver.firstname} {driver.lastname}\n"
@@ -163,25 +157,13 @@ async def accept_order(callback: CallbackQuery):
 
 
     # ====== LOKATSIYANI O‘CHIRISH ======
-    if order_id_str in location_messages:
+    order = await get(Order, {"uid": order_id})
 
-        try:
-            await callback.bot.delete_message(
-                chat_id=callback.message.chat.id,
-                message_id=location_messages[order_id_str]
-            )
-
-            del location_messages[order_id_str]
-
-            print("Lokatsiya o‘chirildi")
-
-        except Exception as e:
-            print("Lokatsiya xatosi:", e)
-
-    else:
-        print("location topilmadi:", order_id_str)
-        print("dict:", location_messages)
-
+    if order.location_message_id:
+        await callback.bot.delete_message(
+            chat_id=callback.message.chat.id,
+            message_id=order.location_message_id
+    )
 
 
     # ====== TEXT XABARNI O‘CHIRISH ======
@@ -267,13 +249,13 @@ async def confirm_order(callback: CallbackQuery):
 
     order_id = callback.data.split("_")[1]
 
-    data = accepted_orders.get(order_id)
+    order = await get_order(order_id)
 
-    if not data:
+    if not order:
         await callback.answer("Buyurtma topilmadi", show_alert=True)
         return
 
-    passenger_id = data["passenger_id"]
+    passenger_id = order["passenger_id"]
 
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
@@ -305,9 +287,9 @@ async def client_yes(callback: CallbackQuery):
     await callback.message.edit_text(
         "😊 Bundan xursandmiz!\n\nYaxshi yo'l tilaymiz 🚕"
     )
-    deleted = await delete_order(order_uid)
-    accepted_orders.pop(order_uid_str, None)
-    print(deleted)
+    await update(Order, {"uid": order_uid}, {
+        "status": "completed"
+    })
 
     await callback.answer()
 
@@ -316,13 +298,13 @@ async def client_no(callback: CallbackQuery):
 
     order_id = callback.data.split("_")[2]
 
-    data = accepted_orders.get(order_id)
+    order = await get_order(order_id)
 
-    if not data:
+    if not order:
         await callback.answer("Buyurtma topilmadi", show_alert=True)
         return
 
-    driver_id = data["driver_id"]
+    driver_id = order["driver_id"]
 
     await callback.bot.send_message(
         chat_id=driver_id,
@@ -349,11 +331,11 @@ async def client_no(callback: CallbackQuery):
 
 
 async def send_followup_questions(bot, order_id: str):
-    data = accepted_orders.get(order_id)
-    if not data:
+    order = await get_order(order_id)
+    if not order:
         return
 
-    driver_id = data["driver_id"]
+    driver_id = order["driver_id"]
 
     driver_keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [
@@ -377,17 +359,16 @@ async def send_request(bot, order_id):
 
 
 async def resend_order_to_group(bot, order_id: str):
-    data = accepted_orders.get(order_id)
+    order = await get_order(order_id)
 
-    if not data:
-        return
+    text = order.message
 
-    if data.get("resent"):
-        print("Allaqachon resend qilingan:", order_id)
-        return
-
-    text = order_texts.get(order_id)
-    chat_id = data["chat_id"]
+    if order.lat and order.lon:
+        await bot.send_location(
+            chat_id=order.chat_id,
+            latitude=order.lat,
+            longitude=order.lon
+    )
 
     if not text:
         return
@@ -400,27 +381,37 @@ async def resend_order_to_group(bot, order_id: str):
 
     # ✅ 1. TEXT yuboramiz
     msg = await bot.send_message(
-        chat_id=chat_id,
+        chat_id=order.chat_id,
         text=text,
         reply_markup=receive(order_id, user_id)
     )
 
     # ✅ 2. AGAR LOCATION BO‘LSA yuboramiz
-    location = order_locations.get(order_id)
+    order = await get_order(order_id)
 
-    if location:
-        lat, lon = location
-        loc_msg = await bot.send_location(
-            chat_id=chat_id,
-            latitude=lat,
-            longitude=lon
-        )
+    text = order.message
 
-        # yana mappingni yangilaymiz
-        location_messages[order_id] = loc_msg.message_id
+    if order.lat and order.lon:
+        await bot.send_location(
+            chat_id=order.chat_id,
+            latitude=order.lat,
+            longitude=order.lon
+    )
+    # location = order_locations.get(order_id)
 
-    # ✅ BELGI
-    data["resent"] = True
+    # if location:
+    #     lat, lon = location
+    #     loc_msg = await bot.send_location(
+    #         chat_id=chat_id,
+    #         latitude=lat,
+    #         longitude=lon
+    #     )
+
+    #     # yana mappingni yangilaymiz
+    #     location_messages[order_id] = loc_msg.message_id
+
+    # # ✅ BELGI
+    # data["resent"] = True
 
 
 
@@ -436,8 +427,8 @@ async def driver_yes(callback: CallbackQuery):
     )
 
     # endi userga savol yuboramiz
-    data = accepted_orders.get(order_id)
-    passenger_id = data["passenger_id"]
+    order = await get_order(order_id)
+    passenger_id = order["passenger_id"]
 
     passenger_keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [
@@ -465,8 +456,8 @@ async def driver_no(callback: CallbackQuery):
         "❌ Kelisha olmaganingizdan afsusdamiz. Buyurtma bekor qilinadi."
     )
 
-    data = accepted_orders.get(order_id)
-    passenger_id = data["passenger_id"]
+    order = await get_order(order_id)
+    passenger_id = order["passenger_id"]
 
     # userga xabar
     await callback.bot.send_message(
@@ -477,8 +468,9 @@ async def driver_no(callback: CallbackQuery):
     # guruhga qayta yuborish
     await resend_order_to_group(callback.bot, order_id)
 
-    # bazadan o‘chirish
-    accepted_orders.pop(order_id, None)
+    await update(Order, {"uid": order_id}, {
+        "status": "cancelled"
+    })
 
     await callback.answer("✅ Javob qabul qilindi")
 
@@ -493,8 +485,9 @@ async def passenger_yes(callback: CallbackQuery):
         "🎉 Kelisha olganingizdan xursandmiz!"
     )
 
-    # bazadan o‘chiramiz
-    accepted_orders.pop(order_id, None)
+    await update(Order, {"uid": order_id}, {
+        "status": "cancelled"
+    })
 
     await callback.answer("✅ Javob qabul qilindi")
 
@@ -510,8 +503,8 @@ async def passenger_no(callback: CallbackQuery):
         "❌ Kelisha olmaganingizdan afsusdamiz. So‘rovingiz qayta guruhga yuboriladi."
     )
 
-    data = accepted_orders.get(order_id)
-    driver_id = data["driver_id"]
+    order = await get_order(order_id)
+    driver_id = order["driver_id"]
 
     # taxiga xabar
     await callback.bot.send_message(
@@ -522,8 +515,9 @@ async def passenger_no(callback: CallbackQuery):
     # guruhga qayta yuborish
     await resend_order_to_group(callback.bot, order_id)
 
-    # bazadan o‘chirish
-    accepted_orders.pop(order_id, None)
+    await update(Order, {"uid": order_id}, {
+        "status": "cancelled"
+    })
 
     await callback.answer("✅ Javob qabul qilindi")
  
