@@ -1,28 +1,35 @@
-
 services:
-
   db:
     image: postgres:15
     container_name: postgres_db
     restart: always
+    # .env faylidagi o'zgaruvchilarni yuklash
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: mysecretpassword
-      POSTGRES_DB: taxi_db
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./db_init:/docker-entrypoint-initdb.d
+    networks:
+      - taxi_network
 
   telegram-bot:
     build: .
     container_name: telegram_bot
     restart: always
-    depends_on:
-      - db
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
     volumes:
       - .:/app
+    networks:
+      - taxi_network
 
 volumes:
   postgres_data:
+
+networks:
+  taxi_network:
+    driver: bridge

@@ -1,8 +1,8 @@
 """fix
 
-Revision ID: 1d949871f2cb
+Revision ID: 279043d0b3a8
 Revises: 
-Create Date: 2026-04-11 11:19:55.341157
+Create Date: 2026-04-18 22:45:22.860133
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '1d949871f2cb'
+revision: str = '279043d0b3a8'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -25,6 +25,13 @@ def upgrade() -> None:
     sa.Column('uid', sa.UUID(), nullable=False),
     sa.Column('message', sa.String(), nullable=True),
     sa.Column('user_id', sa.BIGINT(), nullable=True),
+    sa.Column('lat', sa.Float(), nullable=True),
+    sa.Column('lon', sa.Float(), nullable=True),
+    sa.Column('location_message_id', sa.BIGINT(), nullable=True),
+    sa.Column('driver_id', sa.BIGINT(), nullable=True),
+    sa.Column('chat_id', sa.BIGINT(), nullable=True),
+    sa.Column('status', sa.String(), nullable=True),
+    sa.Column('resent', sa.Integer(), nullable=True),
     sa.PrimaryKeyConstraint('uid')
     )
     op.create_table('taxi',
