@@ -3,7 +3,6 @@ services:
     image: postgres:15
     container_name: postgres_db
     restart: always
-    # .env faylidagi o'zgaruvchilarni yuklash
     environment:
       POSTGRES_USER: $DB_USER
       POSTGRES_PASSWORD: $DB_PASSWORD
@@ -12,7 +11,6 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      # - ./db_init:/docker-entrypoint-initdb.d
     networks:
       - taxi_network
 
@@ -20,8 +18,19 @@ services:
     build: .
     container_name: telegram_bot
     restart: always
-  
-    
+    # MANA BU QISMNI QO'SHISH SHART:
+    environment:
+      - DB_USER=$DB_USER
+      - DB_PASSWORD=$DB_PASSWORD
+      - DB_NAME=$DB_NAME
+      - DB_HOST=$DB_HOST
+      - DB_PORT=$DB_PORT
+      # Agar kodingiz faqat DATABASE_URL ni kutsa:
+      - DATABASE_URL=postgresql+asyncpg://$DB_USER:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME
+    depends_on:
+      - db
+    networks:
+      - taxi_network
     volumes:
       - .:/app
 
