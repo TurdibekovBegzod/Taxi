@@ -21,9 +21,7 @@ services:
     container_name: telegram_bot
     restart: always
   
-    environment:
-      # Docker-compose o'zgaruvchilarni mana shunday formatda birlashtira oladi:
-      DATABASE_URL: "postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
+    
     volumes:
       - .:/app
 
