@@ -314,7 +314,7 @@ async def edit_place2_callback(callback: CallbackQuery, state: FSMContext):
     if data.startswith("place2_"):
         place = data.split("_", 1)[1]
         await state.update_data(user_place2=place)
-        await show_edit_menu(callback.message, state)
+        await show_order_summary(callback.message, state)
         await callback.answer()
         await callback.message.delete()
 

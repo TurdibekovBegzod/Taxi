@@ -32,3 +32,6 @@ class PeopleCountFilter(BaseFilter):
         
         await message.answer("❌ Odamlar soni 1-10 oralig'ida bo'lishi kerak")
         return False
+    
+
+    
