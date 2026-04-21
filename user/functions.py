@@ -1,5 +1,5 @@
 # Here you need write your functions
-from aiogram.types import Message
+from aiogram.types import Message, CallbackQuery
 from aiogram import Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.types.reply_keyboard_remove import ReplyKeyboardRemove
@@ -18,14 +18,10 @@ from user.keyboards import (
     btn_back
 )
 from user.i18n import t
-
 from user.keyboards import language_keyboard, passenger_keyboard,btn_phone_keyboard, confirm_keyboard, edit_keyboard, cancel_keyboard
 from user.i18n import t
-# from .functions import send_order_to_channel
 
-# /language komandasi
 async def language_command(message: Message, state: FSMContext):
-    # hozircha default til
     user_lang = "uz"
 
     await message.answer(
@@ -35,19 +31,12 @@ async def language_command(message: Message, state: FSMContext):
     await state.set_state(taxi_states.choosing_role)
 
 async def passenger_start(message: Message, state: FSMContext):
-    # user_lang = "uz"  # Bu yerda foydalanuvchining tanlagan tilini olishingiz mumkin
-    # await message.answer(
-    #     t(user_lang, "choose.option"),  # Masalan, "Quyidagi bo‘limlardan birini tanlang:"
-    #     reply_markup=passenger_keyboard(user_lang)
-    # )
     await state.set_state(user_states.choose_option)
 
-# Sayohat tugmasi bosilganda 
 async def travel_start(message: Message, state: FSMContext):
     await message.answer("Ismingizni kiriting:", reply_markup=cancel_keyboard)
     await state.set_state(user_states.user_firstname)
 
-# 1. Ism qabul qilish
 async def process_firstname(message: Message, state: FSMContext):
     if await check_cancel(message, state):
         return
@@ -56,7 +45,6 @@ async def process_firstname(message: Message, state: FSMContext):
     await state.set_state(user_states.user_lastname)
 
 
-# 2. Familiya qabul qilish
 async def process_lastname(message: Message, state: FSMContext):
     if await check_cancel(message, state):
         return
@@ -65,7 +53,6 @@ async def process_lastname(message: Message, state: FSMContext):
     await state.set_state(user_states.user_phone)
 
 
-# 3. Telefon raqamini qabul qilish
 async def process_phone(message: Message, state: FSMContext):
     await message.answer("Telefon raqamingiz qabul qilindi ✅", reply_markup=ReplyKeyboardRemove())
 
@@ -76,19 +63,15 @@ async def process_phone(message: Message, state: FSMContext):
 
     await state.update_data(user_phone=phone)
 
-    # Inline keyboard callback Qayerdan uchun
     from .keyboards import place_keyboard
     await message.answer("Qayerdan ketasiz ?", reply_markup=place_keyboard("uz", type="from"))
-    # await message.answer("Manzilingiz qabul qilindi ", reply_markup=cancel_keyboard)
     await state.set_state(user_states.user_place1)
 
 
-# 6. Lokatsiya qabul qilish
 async def process_location(message: Message, state: FSMContext):
     if await check_cancel(message, state):
         return
 
-    # agar lokatsiya yuborilmasa
     if not message.location:
         await message.answer("📍 Iltimos lokatsiyani tugma orqali yuboring!")
         return
@@ -97,17 +80,14 @@ async def process_location(message: Message, state: FSMContext):
     data = await state.get_data()
     editing_field = data.get("editing_field")
 
-    # locatsiya tahrirlansa
     if editing_field == "user_location":
 
         await state.update_data(
             user_location=message.location
         )
 
-        # editing flagni tozalash
         await state.update_data(editing_field=None)
 
-        # qayta summary ko'rsatish
         await show_order_summary(message, state)
         return
 
@@ -115,12 +95,10 @@ async def process_location(message: Message, state: FSMContext):
     await state.set_state(user_states.user_people)
     if await check_cancel(message, state):
         return
-    # ODDIY BUYURTMA JARAYONI
     await state.update_data(
         user_location=message.location
     )
 
-# 8. Odamlar soni qabul qilish va yakunlash
 async def show_order_summary(message: Message, state: FSMContext):
     
     data = await state.get_data()
@@ -142,19 +120,15 @@ async def process_people(message: Message, state: FSMContext):
         return
     people_count = message.text.strip()
     
-    # Faqat raqam ekanligini tekshirish
     if not people_count.isdigit():
         await message.answer("❌ Iltimos, faqat raqam kiriting!\nMasalan: 5")
         return 
 
-    
-    # Ma'lumotни saqlash
     await state.update_data(user_people=int(people_count))
     await show_order_summary(message, state)
 
 async def confirm_send(message: Message, state: FSMContext, bot: Bot):
     data = await state.get_data()
-
     summary = (
         f"🚖 Yangi so'rov:\n\n"
         f"Ism: {data.get('user_firstname', '')}\n"
@@ -168,8 +142,6 @@ async def confirm_send(message: Message, state: FSMContext, bot: Bot):
     SUPERADMIN = int(os.getenv("SUPERADMIN"))
     await bot.send_message(SUPERADMIN, summary)
     new_order = await create_order(message=summary, user_id = int(message.from_user.id))
-    
-
     await send_order_to_channel(bot, state, order_id=new_order.uid, user_id = message.from_user.id)
 
     await message.answer(
@@ -178,7 +150,6 @@ async def confirm_send(message: Message, state: FSMContext, bot: Bot):
     )
 
     await state.set_state(user_states.choose_option)
-
 async def cancel_order(message: Message, state: FSMContext):
     
     await message.answer(
@@ -188,7 +159,7 @@ async def cancel_order(message: Message, state: FSMContext):
 
     await state.set_state(user_states.choose_option)
 
-async def edit_order(message: Message, state: FSMContext):
+async def show_edit_menu(message: Message, state: FSMContext):
     await message.answer(
         "Qaysi ma'lumotni o‘zgartirmoqchisiz?",
         reply_markup=edit_keyboard("uz")
@@ -198,95 +169,219 @@ async def edit_order(message: Message, state: FSMContext):
 async def choose_edit_field(message: Message, state: FSMContext):
     if await check_cancel(message, state):
         return
-
     if message.text == "⬅️ Orqaga":
         await show_order_summary(message, state)
         return
+    if message.text == "Ism":
+        await edit_firstname_start(message, state)
+    elif message.text == "Familiya":
+        await edit_lastname_start(message, state)
+    elif message.text == "Telefon":
+        await edit_phone_start(message, state)
+    elif message.text == "Qayerdan":
+        await edit_place1_start(message, state)
+    elif message.text == "Qayerga":
+        await edit_place2_start(message, state)
+    elif message.text == "Lokatsiya":
+        await edit_location_start(message, state)
+    elif message.text == "Odamlar soni":
+        await edit_people_start(message, state)
+    else:
+        await message.answer("Iltimos, tugmalardan birini tanlang.")
 
-    # QAYERDAN
-    if message.text == "Qayerdan":
-        await state.update_data(editing_field="user_from")
+async def edit_firstname_start(message: Message, state: FSMContext):
+    data = await state.get_data()
+    current_name = data.get('user_firstname', '')    
+    back_keyboard = ReplyKeyboardMarkup(
+        keyboard=[[KeyboardButton(text="⬅️ Orqaga")]],
+        resize_keyboard=True
+    )
+    
+    await message.answer(
+        f"✏️ Yangi ismingizni kiriting:\n\n📌 Hozirgi ismingiz: {current_name}",
+        reply_markup=back_keyboard
+    )
+    await state.set_state(user_states.editing_firstname)
 
-        await message.answer(
-            "Jo'nash viloyatini tanlang:",
-            reply_markup=place_keyboard("uz", "from")
-        )
-
-        await state.set_state(user_states.user_place1)
+async def edit_firstname_save(message: Message, state: FSMContext):
+    if message.text == "⬅️ Orqaga":
+        await show_edit_menu(message, state)
         return
-
-    # QAYERGA
-    if message.text == "Qayerga":
-        await state.update_data(editing_field="user_to")
-
-        await message.answer(
-            "Borish viloyatini tanlang:",
-            reply_markup=place_keyboard("uz", "to")
-        )
-
-        await state.set_state(user_states.user_place2)
-        return
-
-    # LOKATSIYA
-    if message.text == "Lokatsiya":
-        location_keyboard = ReplyKeyboardMarkup(
-            keyboard=[
-                [KeyboardButton(text="📍 Lokatsiya yuborish", request_location=True)]
-            ],
-            resize_keyboard=True
-        )
-
-        await state.update_data(editing_field="user_location")
-
-        await message.answer(
-            "📍 Lokatsiyangizni yuboring:",
-            reply_markup=location_keyboard
-        )
-
-
-        await state.set_state(user_states.user_location)
+    new_name = message.text.strip()
+    if not new_name:
+        await message.answer("❌ Ism kiritilmadi. Qaytadan kiriting:")
         return
     
-    field_map = {
-        "Ism": ("user_firstname", "Yangi ismingizni kiriting:"),
-        "Familiya": ("user_lastname", "Yangi familiyangizni kiriting:"),
-        "Telefon": ("user_phone", "Yangi telefon raqamingizni kiriting:"),
-        "Odamlar soni": ("user_people", "Yangi odamlar sonini kiriting:")
-    }
+    await state.update_data(user_firstname=new_name)
+    await show_order_summary(message, state)
 
-    if message.text not in field_map:
-        await message.answer("Iltimos, tugmalardan birini tanlang.")
-        return
-
-    field_name, ask_text = field_map[message.text]
-
-    await state.update_data(editing_field=field_name)
+async def edit_lastname_start(message: Message, state: FSMContext):
+    data = await state.get_data()
+    current_lastname = data.get('user_lastname', '')
+    
+    back_keyboard = ReplyKeyboardMarkup(
+        keyboard=[[KeyboardButton(text="⬅️ Orqaga")]],
+        resize_keyboard=True
+    )
+    
     await message.answer(
-        ask_text,
-        reply_markup=ReplyKeyboardRemove()
+        f"✏️ Yangi familiyangizni kiriting:\n\n📌 Hozirgi familiyangiz: {current_lastname}",
+        reply_markup=back_keyboard
+    )
+    await state.set_state(user_states.editing_lastname)
+
+async def edit_lastname_save(message: Message, state: FSMContext):
+    if message.text == "⬅️ Orqaga":
+        await show_edit_menu(message, state)
+        return
+    
+    new_lastname = message.text.strip()
+    if not new_lastname:
+        await message.answer("❌ Familiya kiritilmadi. Qaytadan kiriting:")
+        return
+    
+    await state.update_data(user_lastname=new_lastname)
+    await show_order_summary(message, state)
+
+
+async def edit_phone_start(message: Message, state: FSMContext):
+    data = await state.get_data()
+    current_phone = data.get('user_phone', '')
+    
+    phone_keyboard = ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="📱 Telefon raqam yuborish", request_contact=True)],
+            [KeyboardButton(text="⬅️ Orqaga")]
+        ],
+        resize_keyboard=True
+    )
+    
+    await message.answer(
+        f"✏️ Yangi telefon raqamingizni kiriting:\n\n📌 Hozirgi raqam: {current_phone}",
+        reply_markup=phone_keyboard
+    )
+    await state.set_state(user_states.editing_phone)
+
+async def edit_phone_save(message: Message, state: FSMContext):
+    if message.text == "⬅️ Orqaga":
+        await show_edit_menu(message, state)
+        return
+    
+    if message.contact and message.contact.phone_number:
+        new_phone = str(message.contact.phone_number)
+    else:
+        new_phone = message.text.strip()
+    
+    if not new_phone:
+        await message.answer("❌ Telefon raqam kiritilmadi. Qaytadan kiriting:")
+        return
+    
+    await state.update_data(user_phone=new_phone)
+    await show_order_summary(message, state)
+
+async def edit_place1_start(message: Message, state: FSMContext):
+    data = await state.get_data()
+    current_place = data.get('user_place1', '')
+    
+    await message.answer(
+        f"✏️ Jo'nash viloyatini tanlang:\n\n📌 Hozirgi: {current_place}",
+        reply_markup=place_keyboard("uz", "from")
     )
 
-    await state.set_state(user_states.edit_value)
-async def save_edited_value(message: Message, state: FSMContext,bot:Bot):
+async def edit_place1_callback(callback: CallbackQuery, state: FSMContext):
+    data = callback.data
+    
+    if data.startswith("place1_"):
+        place = data.split("_", 1)[1]
+        await state.update_data(user_place1=place)
+        await show_order_summary(callback.message, state)
+        await callback.answer()
+        await callback.message.delete()
+
+
+async def edit_place2_start(message: Message, state: FSMContext):
     data = await state.get_data()
-    editing_field = data.get("editing_field")
+    current_place = data.get('user_place2', '')
+    
+    await message.answer(
+        f"✏️ Borish viloyatini tanlang:\n\n📌 Hozirgi: {current_place}",
+        reply_markup=place_keyboard("uz", "to")
+    )
 
-    if not editing_field:
-        await message.answer("Xatolik yuz berdi. Qaytadan urinib ko‘ring.")
-        await state.clear()
+async def edit_place2_callback(callback: CallbackQuery, state: FSMContext):
+    data = callback.data
+    
+    if data.startswith("place2_"):
+        place = data.split("_", 1)[1]
+        await state.update_data(user_place2=place)
+        await show_edit_menu(callback.message, state)
+        await callback.answer()
+        await callback.message.delete()
+
+async def edit_location_start(message: Message, state: FSMContext):
+    data = await state.get_data()
+    current_location = data.get('user_location')    
+    location_text = "❌ Lokatsiya yo'q"
+    if current_location:
+        location_text = f"📍 Lokatsiya bor"
+    
+    location_keyboard = ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="📍 Lokatsiya yuborish", request_location=True)],
+            [KeyboardButton(text="⬅️ Orqaga")]
+        ],
+        resize_keyboard=True
+    )
+    
+    await message.answer(
+        f"✏️ Yangi lokatsiyangizni yuboring:\n\n📌 Hozirgi: {location_text}",
+        reply_markup=location_keyboard
+    )
+    await state.set_state(user_states.editing_location)
+
+async def edit_location_save(message: Message, state: FSMContext):
+    if message.text == "⬅️ Orqaga":
+        await show_edit_menu(message, state)
         return
-
-    if editing_field == "user_location":
-        if not message.location:
-            await message.answer("📍 Iltimos, lokatsiyani tugma orqali yuboring.")
-            return
-
-        await state.update_data(user_location=message.location)
-        await show_order_summary(message, state)
+    
+    if not message.location:
+        await message.answer("📍 Iltimos, lokatsiyani tugma orqali yuboring!")
         return
-
-    await state.update_data(**{editing_field: message.text})
+    
+    await state.update_data(user_location=message.location)
     await show_order_summary(message, state)
+
+
+async def edit_people_start(message: Message, state: FSMContext):
+    data = await state.get_data()
+    current_people = data.get('user_people', '')
+    
+    back_keyboard = ReplyKeyboardMarkup(
+        keyboard=[[KeyboardButton(text="⬅️ Orqaga")]],
+        resize_keyboard=True
+    )
+    
+    await message.answer(
+        f"✏️ Yangi odamlar sonini kiriting:\n\n📌 Hozirgi son: {current_people}\n📝 Namuna: 2, 3, 4",
+        reply_markup=back_keyboard
+    )
+    await state.set_state(user_states.editing_people)
+
+async def edit_people_save(message: Message, state: FSMContext):
+    if message.text == "⬅️ Orqaga":
+        await show_edit_menu(message, state)
+        return
+    
+    people_count = message.text.strip()
+    
+    if not people_count.isdigit():
+        await message.answer("❌ Iltimos, faqat raqam kiriting!\nMasalan: 5")
+        return
+    
+    await state.update_data(user_people=int(people_count))
+    await show_order_summary(message, state)
+
+
 
 CHANNEL_ID = "@taxi_test_uz"
 from aiogram import Bot
@@ -307,7 +402,7 @@ async def send_order_to_channel(bot: Bot, state: FSMContext, order_id, user_id):
 
             👤 Ism: {data.get('user_firstname')}
             👤 Familiya: {data.get('user_lastname')}
-            📞 Telefon: {data.get('user_phone')}
+            📞 Telefon: cho{data.get('user_phone')}
 
             📍 Qayerdan: {data.get('user_place1')}
             📍 Qayerga: {data.get('user_place2')}
@@ -317,15 +412,12 @@ async def send_order_to_channel(bot: Bot, state: FSMContext, order_id, user_id):
             {map_link}
             """
 
-
-    # Asosiy xabar
     msg = await bot.send_message(
         CHANNEL_ID,
         text,
         reply_markup=receive(order_id, user_id)  
     )
 
-    # Lokatsiya xabari
     if location:
         loc_msg = await bot.send_location(
             CHANNEL_ID,
@@ -373,9 +465,7 @@ async def complaints_start(message, state):
 
 async def complaints_handler(message : Message, state : FSMContext, bot):
     ADMIN_CHAT_ID = -1003780044555
-
     user = message.from_user
-
     caption = (
         f"📩 Yangi shikoyat/taklif\n\n"
         f"👤 User: {user.full_name}\n"
@@ -385,22 +475,18 @@ async def complaints_handler(message : Message, state : FSMContext, bot):
     if message.text:
         text = caption + f"💬 Xabar:\n{message.text}"
         await bot.send_message(ADMIN_CHAT_ID, text)
-
     elif message.photo:
         photo = message.photo[-1].file_id
         text = caption + f"💬 Caption:\n{message.caption or 'Yo‘q'}"
         await bot.send_photo(ADMIN_CHAT_ID, photo, caption=text)
-
     elif message.video:
         video = message.video.file_id
         text = caption + f"💬 Caption:\n{message.caption or 'Yo‘q'}"
         await bot.send_video(ADMIN_CHAT_ID, video, caption=text)
-
     elif message.document:
         doc = message.document.file_id
         text = caption + f"💬 Caption:\n{message.caption or 'Yo‘q'}"
         await bot.send_document(ADMIN_CHAT_ID, doc, caption=text)
-
     await message.answer("✅ Xabaringiz qabul qilindi. Rahmat!", reply_markup=btn_back)
     
 

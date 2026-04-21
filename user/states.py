@@ -12,12 +12,17 @@ class user_states(StatesGroup):
     user_place1 = State()
     user_place2 = State()
     user_location = State()   #
-    # user_time = State()
     user_people = State()
     user_confirm = State()
-
     confirm_order = State() #
     edit_field = State()
-    edit_value = State()
+    edit= State()
+    editing_firstname = State()
+    editing_lastname = State()
+    editing_phone = State()
+    editing_place1 = State()
+    editing_place2 = State()
+    editing_location = State()
+    editing_people = State()
 
     complaint_text = State()

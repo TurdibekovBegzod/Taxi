@@ -69,11 +69,8 @@ def place_keyboard(user_lang: str, type: str = "from"):
         [
             InlineKeyboardButton(text="Qoraqalpog'iston", callback_data=f"{prefix}_Qoraqalpog'iston")
         ]
-    ])
+        ])
 
-# ==================================================
-# ==========================================================
-# CONFIRM KEYBOARD
 def confirm_keyboard(user_lang: str):
     return ReplyKeyboardMarkup(
         keyboard=[
@@ -84,7 +81,6 @@ def confirm_keyboard(user_lang: str):
         resize_keyboard=True
     )
 
-# ====================
 def edit_keyboard(user_lang: str):
     return ReplyKeyboardMarkup(
         keyboard=[
@@ -96,9 +92,6 @@ def edit_keyboard(user_lang: str):
         ],
         resize_keyboard=True
     )
-
-
-
 
 def receive(order_id, user_id):
     return InlineKeyboardMarkup(
@@ -133,7 +126,6 @@ btn_back = ReplyKeyboardMarkup(
     ],
     resize_keyboard=True
 )
-
 
 cancel_keyboard = ReplyKeyboardMarkup(
     keyboard=[
