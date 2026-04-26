@@ -102,7 +102,7 @@ async def accept_order(callback: CallbackQuery):
         return callback.from_user.id
     
     if str(driver.telegram_id) == user_id:
-        await callback.answer("❌ Bu buyurtmani qabul qilishga ruxsat yo'q!", show_alert=True)
+        await callback.answer("❌ Siz o'zingiz yaratgan buyurtmani qabul qila olmaysiz!", show_alert=True)
         return callback.from_user.id
 
 
