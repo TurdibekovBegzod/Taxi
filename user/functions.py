@@ -402,8 +402,8 @@ async def send_order_to_channel(bot: Bot, state: FSMContext, order_id, user_id):
 
             👤 Ism: {data.get('user_firstname')}
             👤 Familiya: {data.get('user_lastname')}
-            📞 Telefon: cho{data.get('user_phone')}
-
+            📞 Telefon: {data.get('user_phone')}
+    
             📍 Qayerdan: {data.get('user_place1')}
             📍 Qayerga: {data.get('user_place2')}
 
