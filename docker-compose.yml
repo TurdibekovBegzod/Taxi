@@ -1,42 +1,11 @@
 services:
-  db:
-    image: postgres:15
-    container_name: postgres_db
-    restart: always
-    environment:
-      POSTGRES_USER: $DB_USER
-      POSTGRES_PASSWORD: $DB_PASSWORD
-      POSTGRES_DB: $DB_NAME
-    ports:
-      - 5432:5432
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - taxi_network
-
   telegram-bot:
     build: .
     container_name: telegram_bot
     restart: always
-    # MANA BU QISMNI QO'SHISH SHART:
-    environment:
-      - DB_USER=$DB_USER
-      - DB_PASSWORD=$DB_PASSWORD
-      - DB_NAME=$DB_NAME
-      - DB_HOST=$DB_HOST
-      - DB_PORT=$DB_PORT
-      # Agar kodingiz faqat DATABASE_URL ni kutsa:
-      - DATABASE_URL=postgresql+asyncpg://$DB_USER:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME
-    depends_on:
-      - db
-    networks:
-      - taxi_network
+
     volumes:
       - .:/app
 
-volumes:
-  postgres_data:
-
-networks:
-  taxi_network:
-    driver: bridge
+    env_file:
+      - .env

@@ -4,6 +4,9 @@ import uuid
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from dotenv import load_dotenv
 import os
+from datetime import datetime, timezone
+from sqlalchemy import DateTime
+
 load_dotenv()
 
 
@@ -32,10 +35,8 @@ class Base(DeclarativeBase):
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
-    first_name = Column(String(length=30))
-    last_name = Column(String(length=30))
-    phone = Column(String(length=30))
-    telegram_id = Column(BIGINT)
+    telegram_id = Column(String)
+    last_used_at = Column(DateTime(timezone = True), default=lambda : datetime.now(timezone.utc), onupdate=lambda : datetime.now(timezone.utc))
 
     def __repr__(self):
         return f"<User id={self.id} fullname={self.fullname!r} phone={self.phone} telegram_id={self.telegram_id}>"

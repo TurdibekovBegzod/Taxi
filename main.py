@@ -10,6 +10,7 @@ import sys
 import os
 from dotenv import load_dotenv
 from data import models 
+from middlewares import register_middleware
 
 log_format = "%(asctime)s - %(levelname)s - %(message)s"
 date_format = "%Y-%m-%d %H:%M:%S"
@@ -60,6 +61,9 @@ async def main():
     dp.include_router(admin.router)
     dp.include_router(taxi.router)
     dp.include_router(user.router)
+
+    register_middleware(dp)
+    
 
     await bot.set_my_commands([
         BotCommand(command="/start", description="Botni ishga tushirish"),
