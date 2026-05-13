@@ -1,7 +1,7 @@
-import re
 from aiogram.filters import BaseFilter
 from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
+from services.phone import is_valid_phone_number
 
 class PhoneFilter(BaseFilter):
     async def __call__(self, message: Message, state: FSMContext) -> bool:
@@ -11,7 +11,7 @@ class PhoneFilter(BaseFilter):
 
         phone = message.contact.phone_number if message.contact else message.text.strip()
 
-        if re.fullmatch(r"(\+998\d{9}|\d{9})", phone):
+        if is_valid_phone_number(phone):
             return True
         
         await message.answer("❌ Telefon noto'g'ri\nNamuna: +998776543423 yoki 998765434")

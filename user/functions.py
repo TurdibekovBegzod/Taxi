@@ -20,6 +20,29 @@ from user.keyboards import (
 from user.i18n import t
 from user.keyboards import language_keyboard, passenger_keyboard,btn_phone_keyboard, confirm_keyboard, edit_keyboard, cancel_keyboard
 from user.i18n import t
+from services.phone import normalize_phone_number
+
+REQUIRED_ORDER_FIELDS = {
+    "user_firstname": "Ism",
+    "user_lastname": "Familiya",
+    "user_phone": "Telefon",
+    "user_place1": "Qayerdan",
+    "user_place2": "Qayerga",
+    "user_location": "Lokatsiya",
+    "user_people": "Odamlar soni",
+}
+
+
+def get_missing_order_fields(data: dict) -> list[str]:
+    missing = []
+
+    for key, label in REQUIRED_ORDER_FIELDS.items():
+        value = data.get(key)
+        if value is None or value == "":
+            missing.append(label)
+
+    return missing
+
 
 async def language_command(message: Message, state: FSMContext):
     user_lang = "uz"
@@ -61,7 +84,7 @@ async def process_phone(message: Message, state: FSMContext):
     else:
         phone = (message.text or "").strip()
 
-    await state.update_data(user_phone=phone)
+    await state.update_data(user_phone=normalize_phone_number(phone) or phone)
 
     from .keyboards import place_keyboard
     await message.answer("Qayerdan ketasiz ?", reply_markup=place_keyboard("uz", type="from"))
@@ -91,17 +114,27 @@ async def process_location(message: Message, state: FSMContext):
         await show_order_summary(message, state)
         return
 
-    await message.answer("Nechta odam ketadi? \nNamuna: 2", reply_markup=cancel_keyboard)
-    await state.set_state(user_states.user_people)
-    if await check_cancel(message, state):
-        return
     await state.update_data(
         user_location=message.location
     )
+    await message.answer("Nechta odam ketadi? \nNamuna: 2", reply_markup=cancel_keyboard)
+    await state.set_state(user_states.user_people)
 
 async def show_order_summary(message: Message, state: FSMContext):
     
     data = await state.get_data()
+    missing_fields = get_missing_order_fields(data)
+
+    if missing_fields:
+        await message.answer(
+            "Ma'lumotlar to'liq emas. Iltimos, e'lon yaratishni qaytadan boshlang.\n"
+            f"Yetishmayotgan ma'lumotlar: {', '.join(missing_fields)}",
+            reply_markup=passenger_keyboard("uz")
+        )
+        await state.clear()
+        await state.set_state(user_states.choose_option)
+        return
+
     summary = (
         f"✅ Sizning so'rovingiz!\n\n"
         f"Ism: {data.get('user_firstname')}\n"
@@ -129,6 +162,19 @@ async def process_people(message: Message, state: FSMContext):
 
 async def confirm_send(message: Message, state: FSMContext, bot: Bot):
     data = await state.get_data()
+    missing_fields = get_missing_order_fields(data)
+
+    if missing_fields:
+        await message.answer(
+            "E'lon yuborilmadi, chunki ma'lumotlar to'liq emas.\n"
+            f"Yetishmayotgan ma'lumotlar: {', '.join(missing_fields)}\n\n"
+            "Iltimos, e'lon yaratishni qaytadan boshlang.",
+            reply_markup=passenger_keyboard("uz")
+        )
+        await state.clear()
+        await state.set_state(user_states.choose_option)
+        return
+
     summary = (
         f"🚖 Yangi so'rov:\n\n"
         f"Ism: {data.get('user_firstname', '')}\n"
@@ -272,11 +318,13 @@ async def edit_phone_save(message: Message, state: FSMContext):
     else:
         new_phone = message.text.strip()
     
-    if not new_phone:
-        await message.answer("❌ Telefon raqam kiritilmadi. Qaytadan kiriting:")
+    normalized_phone = normalize_phone_number(new_phone)
+
+    if not normalized_phone:
+        await message.answer("❌ Telefon raqam noto'g'ri. Namuna: +998901234567 yoki 901234567")
         return
     
-    await state.update_data(user_phone=new_phone)
+    await state.update_data(user_phone=normalized_phone)
     await show_order_summary(message, state)
 
 async def edit_place1_start(message: Message, state: FSMContext):
@@ -287,6 +335,7 @@ async def edit_place1_start(message: Message, state: FSMContext):
         f"✏️ Jo'nash viloyatini tanlang:\n\n📌 Hozirgi: {current_place}",
         reply_markup=place_keyboard("uz", "from")
     )
+    await state.set_state(user_states.editing_place1)
 
 async def edit_place1_callback(callback: CallbackQuery, state: FSMContext):
     data = callback.data
@@ -307,6 +356,7 @@ async def edit_place2_start(message: Message, state: FSMContext):
         f"✏️ Borish viloyatini tanlang:\n\n📌 Hozirgi: {current_place}",
         reply_markup=place_keyboard("uz", "to")
     )
+    await state.set_state(user_states.editing_place2)
 
 async def edit_place2_callback(callback: CallbackQuery, state: FSMContext):
     data = callback.data

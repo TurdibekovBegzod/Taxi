@@ -17,6 +17,7 @@ from user.keyboards import passenger_keyboard
 from user.states import user_states
 from aiogram.types.reply_keyboard_remove import ReplyKeyboardRemove
 from data import crud_commands, models
+from services.phone import normalize_phone_number
 
 
 async def start_command_answer(message: Message, bot: Bot, state: FSMContext):
@@ -79,11 +80,11 @@ async def get_lastname_answer(message: Message, state: FSMContext):
  
 async def get_contact_answer(message: Message, state: FSMContext):
     if message.contact and message.contact.phone_number:
-        phone = str(message.contact.phone_number)
+        phone = message.contact.phone_number
     else:
         phone = (message.text or "").strip()
-
-    await state.update_data(phone_number=phone)
+    
+    await state.update_data(phone_number=normalize_phone_number(phone) or phone)
     await message.answer("Iltimos, mashinangiz modelini kiriting!", reply_markup=ReplyKeyboardRemove())
     await state.set_state(taxi_states.car_model)
 
@@ -198,7 +199,7 @@ async def get_new_lastname_answer(message: Message, state: FSMContext):
 
 async def get_new_phone_answer(message: Message, state: FSMContext):
     phone = str(message.contact.phone_number) if message.contact and message.contact.phone_number else (message.text or "").strip()
-    await crud_commands.update(models.Taxi, {'telegram_id': message.from_user.id}, {'phone_number': phone})
+    await crud_commands.update(models.Taxi, {'telegram_id': message.from_user.id}, {'phone_number': normalize_phone_number(phone) or phone})
     await message.answer("Telefon raqamingiz yangilandi ✅", reply_markup=edit_profile)
     await state.set_state(taxi_states.edit_confirm)
 

@@ -59,10 +59,6 @@ from .filters import (
 
 router = Router()
 
-@router.message(F.text == "✅ Yuborish")
-async def confirm_handler(message: Message, state: FSMContext, bot: Bot):
-    await confirm_send(message, state, bot)
-
 # ======================
 # COMMAND LAR
 router.message.register(language_command, Command("language"))
@@ -106,5 +102,5 @@ router.message.register(edit_lastname_save, StateFilter(user_states.editing_last
 router.message.register(edit_phone_save, StateFilter(user_states.editing_phone))
 router.message.register(edit_location_save, StateFilter(user_states.editing_location))
 router.message.register(edit_people_save, StateFilter(user_states.editing_people))
-router.callback_query.register(edit_place1_callback, lambda c: c.data.startswith("place1_"))
-router.callback_query.register(edit_place2_callback, lambda c: c.data.startswith("place2_"))
+router.callback_query.register(edit_place1_callback, lambda c: c.data.startswith("place1_"), StateFilter(user_states.editing_place1))
+router.callback_query.register(edit_place2_callback, lambda c: c.data.startswith("place2_"), StateFilter(user_states.editing_place2))

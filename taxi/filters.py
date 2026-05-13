@@ -1,6 +1,6 @@
-import re
 from aiogram.filters import BaseFilter
 from aiogram.types import Message
+from services.phone import normalize_phone_number
 
 class PhoneFilter(BaseFilter):
     async def __call__(self, message: Message) -> bool:
@@ -13,10 +13,7 @@ class PhoneFilter(BaseFilter):
         else:
             phone = message.text.strip()
         
-        digits = re.sub(r"\D", "", phone)        
-        if len(digits) == 9:
-            return True
-        elif len(digits) == 12 and digits.startswith('998'):
+        if normalize_phone_number(phone):
             return True
         
         await message.answer(
@@ -33,16 +30,7 @@ class PhoneFilter(BaseFilter):
 
 def format_phone_number(phone: str) -> str:
     """Telefon raqamni +998951197705 yoki 951197705 formatida kriting"""
-    digits = re.sub(r"\D", "", phone.strip())
-    
-    if len(digits) == 9:
-        digits = '998' + digits[1:]
-    elif len(digits) == 12 and digits.startswith('998'):
-        pass
-    else:
-        return phone
-    
-    return '+' + digits
+    return normalize_phone_number(phone) or phone
 
 def format_car_number(car_number: str) -> str:
     """Mashina raqamni formatlash"""
