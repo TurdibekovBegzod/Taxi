@@ -1,523 +1,505 @@
-# Here you need write your callbacks
-from aiogram.types import CallbackQuery
-from user.i18n import t
-from aiogram.fsm.context import FSMContext
-from .states import user_states
-from .keyboards import btn_location_keyboard, place_keyboard
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from data.models import Order
-import uuid
 from datetime import datetime, timedelta, timezone
+import uuid
+
+from aiogram.fsm.context import FSMContext
+from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
+
+from data.crud_commands import get_order, update
+from data.driver_check import get_driver, is_driver
+from data.models import Order
+from services.users import UserService
+from user.i18n import t
+from user.keyboards import location_keyboard, phone_keyboard, place_keyboard, receive
 from user.my_scheduler import scheduler
-from user.keyboards import receive
+from user.state_render import render_current_state
 
-from data.driver_check import is_driver, get_driver
-from data.crud_commands import get, delete_order, get_order, update
-from data.models import User
+from .states import user_states
 
 
-
-async def language_callback(callback: CallbackQuery):
-    lang = callback.data.split("_")[1]  # uz yoki ru
-
-    # Bu yerda keyin FSM yoki DB ga saqlaysiz
-
-    await callback.message.edit_text(
-        t(lang, f"language.changed.{lang}")
+async def language_callback(callback: CallbackQuery, state: FSMContext):
+    lang = callback.data.split("_")[1]
+    await UserService.update_user_language(
+        telegram_id=str(callback.from_user.id),
+        language=lang,
     )
+
+    await callback.message.edit_text(t(lang, f"language.changed.{lang}"))
+    await render_current_state(callback.message, state, lang)
     await callback.answer()
-    
-# ======================
-# Qayerdan 
+
+
 async def process_place1(call: CallbackQuery, state: FSMContext):
-    place1 = call.data.split("_")[1]
+    lang = await UserService.get_user_language(str(call.from_user.id))
+    if call.data == "place_back":
+        await call.message.delete()
+        await call.message.answer(t(lang, "input.phone"), reply_markup=phone_keyboard(lang))
+        await state.set_state(user_states.user_phone)
+        await call.answer()
+        return
+
+    place1 = call.data.split("_", 1)[1]
     data = await state.get_data()
 
-    if data.get('user_place2'):
-        if data['user_place2'] == place1:
-            await call.answer("❌ Manzillar bir xil bo'lishi mumkin emas!", show_alert=True)
-            
-            return
-        
-    
+    if data.get("user_place2") == place1:
+        await call.answer(t(lang, "error.same_region"), show_alert=True)
+        return
+
     await state.update_data(user_place1=place1)
 
-    # tahrirlash bo'lsa
     if data.get("editing_field") == "user_from":
         from .functions import show_order_summary
+
         await show_order_summary(call.message, state)
         await call.answer()
         return
 
-    # bo'yurtma yaratishda
     await state.set_state(user_states.user_place2)
-    await call.message.answer(
-        "Qayerga borasiz?",
-        reply_markup=place_keyboard("uz", type="to")
-    )
-
+    await call.message.answer(t(lang, "input.to"), reply_markup=place_keyboard(lang, type="to"))
     await call.answer()
-# ======================
-# Qayerga 
+
+
 async def process_place2(call: CallbackQuery, state: FSMContext):
-    place2 = call.data.split("_")[1]
+    lang = await UserService.get_user_language(str(call.from_user.id))
+    if call.data == "place_back":
+        await call.message.delete()
+        await call.message.answer(t(lang, "input.from"), reply_markup=place_keyboard(lang, type="from"))
+        await state.set_state(user_states.user_place1)
+        await call.answer()
+        return
+
+    place2 = call.data.split("_", 1)[1]
     data = await state.get_data()
-    if data['user_place1'] == place2:
-        await call.answer("❌ Manzillar bir xil bo'lishi mumkin emas!", show_alert=True)
-        
-        return  
+    if data.get("user_place1") == place2:
+        await call.answer(t(lang, "error.same_region"), show_alert=True)
+        return
+
     await state.update_data(user_place2=place2)
 
-    # tahrirlash
     if data.get("editing_field") == "user_to":
         from .functions import show_order_summary
+
         await show_order_summary(call.message, state)
         await call.answer()
         return
 
-    # bo'yurtma yaratisda
     await state.set_state(user_states.user_confirm)
-
-    await call.message.answer(
-        "Iltimos lokatsiyangizni tashlang 📍:"
-        ,
-        reply_markup=btn_location_keyboard
-    )
+    await call.message.answer(t(lang, "input.location"), reply_markup=location_keyboard(lang))
     await call.answer()
 
-# Bog'lanish va Qabul qilish
+
+async def _lang_for(user_id) -> str:
+    return await UserService.get_user_language(str(user_id))
 
 
-async def accept_order(callback: CallbackQuery):
-    driver = await get_driver(int(callback.from_user.id))
-    order_id_side = callback.data.split("|", 1)[0]
-    user_id_side = callback.data.split("|", 1)[1]
-    order_id = order_id_side.replace("accept_", "")
-    user_id = user_id_side.replace("uid_", "")
-    order_id_str = str(order_id)
-
-    # Faqat haydovchi tekshiruvi
-    if not await is_driver(int(callback.from_user.id)):
-        await callback.answer("❌ Bu tugmani faqat haydovchilar bosishi mumkin!", show_alert=True)
-        return callback.from_user.id
-    
-    if str(driver.telegram_id) == user_id:
-        await callback.answer("❌ Siz o'zingiz yaratgan buyurtmani qabul qila olmaysiz!", show_alert=True)
-        return callback.from_user.id
-
-
-    order = await get(Order, {"uid": order_id})
-
-    if not order:
-        await callback.answer("❌ Buyurtma topilmadi!", show_alert=True)
-        return
-
-    await update(Order, {"uid": order_id}, {
-        "driver_id": driver.telegram_id,
-        "chat_id": callback.message.chat.id,
-        "status": "accepted",
-        "resent": 0
-})
-
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [
-            InlineKeyboardButton(
-                text="💬 Telegramda yozish",
-                url=f"tg://user?id={user_id}"
-            )
-        ],
-        [
-            InlineKeyboardButton(
-                text="✅ Buyurtmani tasdiqlash",
-                callback_data=f"confirm_{order_id_str}"
-            )
-        ]
-    ])
-
-    # 🔥 Haydovchiga yuborish (faqat bog‘lanish tugmasi bilan)
-    await callback.bot.send_message(
-        chat_id=driver.telegram_id,
-        text=(
-            f"🚖 Siz buyurtmani qabul qildingiz!\n\n"
-            f"{callback.message.text}\n\n"
-            f" Yo'lovchi bilan bog'langaningizdan keyin Buyurtmani tasdiqlash tugmasini bosing"
-        ),
-        reply_markup=keyboard
-    )
-    # ====== YO‘LOVCHIGA XABAR ======
-    await callback.bot.send_message(
-        chat_id=user_id,
-
-        text=(
-            "🚕 Sizning so'rovingiz taxi tomonidan ko'rib chiqilmoqda\n\n"
-            f"👤 Taxi: {driver.firstname} {driver.lastname}\n"
-            f"📞 Telefon: {driver.phone_number}"
-        )
-    )
-
-
-    # ====== LOKATSIYANI O‘CHIRISH ======
-    order = await get(Order, {"uid": order_id})
-
-    if order.location_message_id:
-        await callback.bot.delete_message(
-            chat_id=callback.message.chat.id,
-            message_id=order.location_message_id
-    )
-
-
-    # ====== TEXT XABARNI O‘CHIRISH ======
+def _order_uuid(order_id: str):
     try:
-        await callback.message.delete()
-        print("Text o‘chirildi")
-    except Exception as e:
-        print("Text xatosi:", e)
+        return uuid.UUID(str(order_id))
+    except (TypeError, ValueError):
+        return None
 
 
-
-    # ====== 40 sekunddan keyin eslatma ======
-    
-    ask_request_time = datetime.now(timezone.utc) + timedelta(minutes = 5)
-    send_request_time = datetime.now(timezone.utc) + timedelta(minutes = 20)
-
-    scheduler.add_job(
-        send_followup_wrapper,
-        trigger="date",
-        run_date=ask_request_time,
-        kwargs={
-            "bot": callback.bot,
-            "order_id": order_id_str
-        },
-        id=f"followup_{order_id_str}",
-        replace_existing=True
-    )
-    scheduler.add_job(
-        send_request,
-        trigger="date",
-        run_date=send_request_time,
-        kwargs={
-            "bot": callback.bot,
-            "order_id": order_id_str
-        }
-    )
-
-
-    await callback.answer("✅ Buyurtma qabul qilindi!")
-
-
-async def contact_passenger(callback: CallbackQuery):
-    if not await is_driver(str(callback.from_user.id)):
-        await callback.answer("❌ Bu tugmani faqat haydovchilar bosishi mumkin!", show_alert=True)
-        return
-    
-    
-    order_id = uuid.UUID(callback.data.split("_", 1)[1])
-
-    order = await get(Order, {"uid": order_id})
-
-    if not order:
-        await callback.answer("❌ Buyurtma topilmadi!", show_alert=True)
-        return
-
-    passenger_id = order.user_id
-
-
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [
-            InlineKeyboardButton(
-                text="💬 Telegramda yozish",
-                url=f"tg://user?id={passenger_id}"
-            )
+def _yes_no_keyboard(lang: str, yes_callback: str, no_callback: str) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text=t(lang, "button.yes"), callback_data=yes_callback),
+                InlineKeyboardButton(text=t(lang, "button.no"), callback_data=no_callback),
+            ]
         ]
-    ])
-
-    text = "📞 Yo‘lovchi bilan bog‘lanish uchun tugmani bosing."
-
-    await callback.bot.send_message(
-        chat_id=callback.from_user.id,
-        text=text,
-        reply_markup=keyboard
     )
 
-    await callback.answer("✅ Sizga shaxsiy xabar yuborildi.", show_alert=True)
 
-
-
-# ======================== TASDIQLASH FUNKSIYASI======================
-
-async def confirm_order(callback: CallbackQuery):
-
-    order_id = callback.data.split("_")[1]
-
-    order = await get_order(order_id)
-
-    if not order:
-        await callback.answer("Buyurtma topilmadi", show_alert=True)
-        return
-
-    passenger_id = order["passenger_id"]
-
-    keyboard = InlineKeyboardMarkup(
+def _driver_accept_keyboard(lang: str, passenger_id: int, order_id: str) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="Ha",
-                    callback_data=f"client_yes_{order_id}"
-                ),
+                    text=t(lang, "order.telegram_button"),
+                    url=f"tg://user?id={passenger_id}",
+                )
+            ],
+            [
                 InlineKeyboardButton(
-                    text="Yo'q",
-                    callback_data=f"client_no_{order_id}"
+                    text=t(lang, "order.confirm_button"),
+                    callback_data=f"confirm_{order_id}",
+                )
+            ],
+        ]
+    )
+
+
+def _contact_keyboard(lang: str, passenger_id: int) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text=t(lang, "order.telegram_button"),
+                    url=f"tg://user?id={passenger_id}",
                 )
             ]
         ]
     )
 
-    await callback.bot.send_message(
-        chat_id=passenger_id,
-        text="🚕 Taxi siz bilan bog'landimi?",
-        reply_markup=keyboard
-    )
 
-    await callback.answer("So'rov yuborildi ✅")
+async def accept_order(callback: CallbackQuery):
+    driver_lang = await _lang_for(callback.from_user.id)
 
-# YO‘LOVCHI HA BOSSA
-async def client_yes(callback: CallbackQuery):
-    order_uid_str : str = callback.data.split("_")[2]
-    order_uid = uuid.UUID(order_uid_str)
-    await callback.message.edit_text(
-        "😊 Bundan xursandmiz!\n\nYaxshi yo'l tilaymiz 🚕"
-    )
-    await update(Order, {"uid": order_uid}, {
-        "status": "completed"
-    })
-
-    await callback.answer()
-
-# YO‘LOVCHI YO‘Q BOSSA
-async def client_no(callback: CallbackQuery):
-
-    order_id = callback.data.split("_")[2]
-
-    order = await get_order(order_id)
-
-    if not order:
-        await callback.answer("Buyurtma topilmadi", show_alert=True)
+    if not await is_driver(int(callback.from_user.id)):
+        await callback.answer(t(driver_lang, "order.driver_only"), show_alert=True)
         return
 
-    driver_id = order["driver_id"]
+    driver = await get_driver(int(callback.from_user.id))
+    try:
+        order_id_side, user_id_side = callback.data.split("|", 1)
+    except ValueError:
+        await callback.answer(t(driver_lang, "order.not_found"), show_alert=True)
+        return
+
+    order_uid = _order_uuid(order_id_side.replace("accept_", ""))
+    if not order_uid:
+        await callback.answer(t(driver_lang, "order.not_found"), show_alert=True)
+        return
+
+    order = await get_order(order_uid)
+    if not order:
+        await callback.answer(t(driver_lang, "order.not_found"), show_alert=True)
+        return
+
+    passenger_id = order.user_id
+    passenger_lang = await _lang_for(passenger_id)
+    callback_user_id = user_id_side.replace("uid_", "")
+
+    if str(passenger_id) != str(callback_user_id):
+        await callback.answer(t(driver_lang, "order.not_found"), show_alert=True)
+        return
+
+    if str(driver.telegram_id) == str(passenger_id):
+        await callback.answer(t(driver_lang, "order.self_accept"), show_alert=True)
+        return
+
+    if order.status not in (None, "new") or order.driver_id:
+        await callback.answer(t(driver_lang, "order.already_accepted"), show_alert=True)
+        return
+
+    updated_order = await update(Order, {"uid": order_uid}, {
+        "driver_id": driver.telegram_id,
+        "chat_id": callback.message.chat.id,
+        "status": "accepted",
+        "resent": 0,
+    })
+    if not updated_order:
+        await callback.answer(t(driver_lang, "order.not_found"), show_alert=True)
+        return
+
+    order_id = str(order_uid)
+    await callback.bot.send_message(
+        chat_id=driver.telegram_id,
+        text=(
+            f"{t(driver_lang, 'order.accepted_driver')}\n\n"
+            f"{callback.message.text}\n\n"
+            f"{t(driver_lang, 'order.confirm_instruction')}"
+        ),
+        reply_markup=_driver_accept_keyboard(driver_lang, passenger_id, order_id),
+    )
 
     await callback.bot.send_message(
-        chat_id=driver_id,
+        chat_id=passenger_id,
         text=(
-            "⚠️ Siz hali yo'lovchi bilan bog'lanmagansiz!\n\n"
-            "Iltimos yo'lovchi bilan bog'laning."
-        )
+            f"{t(passenger_lang, 'order.passenger_review')}\n\n"
+            f"{t(passenger_lang, 'field.driver')}: {driver.firstname} {driver.lastname}\n"
+            f"{t(passenger_lang, 'field.phone')}: {driver.phone_number}"
+        ),
     )
 
-    await callback.message.edit_text(
-        "❗ Taxi hali siz bilan bog'lanmadi."
+    if order.location_message_id:
+        try:
+            await callback.bot.delete_message(
+                chat_id=callback.message.chat.id,
+                message_id=order.location_message_id,
+            )
+        except Exception as e:
+            print("Location delete error:", e)
+
+    try:
+        await callback.message.delete()
+    except Exception as e:
+        print("Order message delete error:", e)
+
+    scheduler.add_job(
+        send_followup_wrapper,
+        trigger="date",
+        run_date=datetime.now(timezone.utc) + timedelta(minutes=5),
+        kwargs={"bot": callback.bot, "order_id": order_id},
+        id=f"followup_{order_id}",
+        replace_existing=True,
+    )
+    scheduler.add_job(
+        send_request,
+        trigger="date",
+        run_date=datetime.now(timezone.utc) + timedelta(minutes=20),
+        kwargs={"bot": callback.bot, "order_id": order_id},
+        id=f"resend_{order_id}",
+        replace_existing=True,
     )
 
+    await callback.answer(t(driver_lang, "order.accepted_alert"))
+
+
+async def contact_passenger(callback: CallbackQuery):
+    driver_lang = await _lang_for(callback.from_user.id)
+    if not await is_driver(str(callback.from_user.id)):
+        await callback.answer(t(driver_lang, "order.driver_only"), show_alert=True)
+        return
+
+    order_uid = _order_uuid(callback.data.split("_", 1)[1])
+    if not order_uid:
+        await callback.answer(t(driver_lang, "order.not_found"), show_alert=True)
+        return
+
+    order = await get_order(order_uid)
+    if not order:
+        await callback.answer(t(driver_lang, "order.not_found"), show_alert=True)
+        return
+
+    await callback.bot.send_message(
+        chat_id=callback.from_user.id,
+        text=t(driver_lang, "order.contact_prompt"),
+        reply_markup=_contact_keyboard(driver_lang, order.user_id),
+    )
+    await callback.answer(t(driver_lang, "order.private_sent"), show_alert=True)
+
+
+async def confirm_order(callback: CallbackQuery):
+    driver_lang = await _lang_for(callback.from_user.id)
+    order_uid = _order_uuid(callback.data.split("_", 1)[1])
+    if not order_uid:
+        await callback.answer(t(driver_lang, "order.not_found"), show_alert=True)
+        return
+
+    order = await get_order(order_uid)
+    if not order:
+        await callback.answer(t(driver_lang, "order.not_found"), show_alert=True)
+        return
+    if str(order.driver_id) != str(callback.from_user.id):
+        await callback.answer(t(driver_lang, "order.not_found"), show_alert=True)
+        return
+
+    passenger_lang = await _lang_for(order.user_id)
+    await callback.bot.send_message(
+        chat_id=order.user_id,
+        text=t(passenger_lang, "order.contact_question"),
+        reply_markup=_yes_no_keyboard(
+            passenger_lang,
+            f"client_yes_{order_uid}",
+            f"client_no_{order_uid}",
+        ),
+    )
+    await callback.answer(t(driver_lang, "order.request_sent"))
+
+
+async def client_yes(callback: CallbackQuery):
+    lang = await _lang_for(callback.from_user.id)
+    order_uid = _order_uuid(callback.data.split("_", 2)[2])
+    if not order_uid:
+        await callback.answer(t(lang, "order.not_found"), show_alert=True)
+        return
+
+    order = await get_order(order_uid)
+    if not order or str(order.user_id) != str(callback.from_user.id):
+        await callback.answer(t(lang, "order.not_found"), show_alert=True)
+        return
+
+    await callback.message.edit_text(t(lang, "order.client_happy"))
+    await update(Order, {"uid": order_uid}, {"status": "completed"})
     await callback.answer()
 
 
+async def client_no(callback: CallbackQuery):
+    lang = await _lang_for(callback.from_user.id)
+    order_uid = _order_uuid(callback.data.split("_", 2)[2])
+    if not order_uid:
+        await callback.answer(t(lang, "order.not_found"), show_alert=True)
+        return
 
+    order = await get_order(order_uid)
+    if not order or str(order.user_id) != str(callback.from_user.id):
+        await callback.answer(t(lang, "order.not_found"), show_alert=True)
+        return
 
+    if order.driver_id:
+        driver_lang = await _lang_for(order.driver_id)
+        await callback.bot.send_message(
+            chat_id=order.driver_id,
+            text=t(driver_lang, "order.driver_contact_passenger"),
+        )
 
-
-# 10 mindan keyin tekshrish
-
-
+    await callback.message.edit_text(t(lang, "order.passenger_not_contacted"))
+    await callback.answer()
 
 
 async def send_followup_questions(bot, order_id: str):
-    order = await get_order(order_id)
-    if not order:
+    order_uid = _order_uuid(order_id)
+    if not order_uid:
         return
 
-    driver_id = order["driver_id"]
+    order = await get_order(order_uid)
+    if not order or not order.driver_id or order.status != "accepted":
+        return
 
-    driver_keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [
-            InlineKeyboardButton(text="Ha", callback_data=f"driver_yes_{order_id}"),
-            InlineKeyboardButton(text="Yo'q", callback_data=f"driver_no_{order_id}")
-        ]
-    ])
-
+    driver_lang = await _lang_for(order.driver_id)
     await bot.send_message(
-        chat_id=driver_id,
-        text="Yo‘lovchi bilan bog'lana oldingizmi?",
-        reply_markup=driver_keyboard
+        chat_id=order.driver_id,
+        text=t(driver_lang, "order.followup_driver_question"),
+        reply_markup=_yes_no_keyboard(
+            driver_lang,
+            f"driver_yes_{order_uid}",
+            f"driver_no_{order_uid}",
+        ),
     )
 
+
 async def send_followup_wrapper(bot, order_id):
-    print("JOB ISHLADI:", order_id)
     await send_followup_questions(bot, order_id)
+
 
 async def send_request(bot, order_id):
     await resend_order_to_group(bot, order_id)
 
 
 async def resend_order_to_group(bot, order_id: str):
-    order = await get_order(order_id)
-
-    text = order.message
-
-    if order.lat and order.lon:
-        await bot.send_location(
-            chat_id=order.chat_id,
-            latitude=order.lat,
-            longitude=order.lon
-    )
-
-    if not text:
+    order_uid = _order_uuid(order_id)
+    if not order_uid:
         return
-    
-    order = await get_order(order_id)
-    if not order:
-        print("Buyurtma topilmadi DB da:", order_id)
-        return
-    user_id = order.user_id
 
-    # ✅ 1. TEXT yuboramiz
-    msg = await bot.send_message(
+    order = await get_order(order_uid)
+    if not order or not order.message or not order.chat_id:
+        return
+
+    if order.status == "completed":
+        return
+
+    await update(Order, {"uid": order_uid}, {
+        "status": "new",
+        "driver_id": None,
+        "resent": (order.resent or 0) + 1,
+    })
+
+    passenger_lang = await _lang_for(order.user_id)
+    await bot.send_message(
         chat_id=order.chat_id,
-        text=text,
-        reply_markup=receive(order_id, user_id)
+        text=order.message,
+        reply_markup=receive(str(order_uid), order.user_id, passenger_lang),
     )
-
-    # ✅ 2. AGAR LOCATION BO‘LSA yuboramiz
-    order = await get_order(order_id)
-
-    text = order.message
 
     if order.lat and order.lon:
-        await bot.send_location(
+        location_msg = await bot.send_location(
             chat_id=order.chat_id,
             latitude=order.lat,
-            longitude=order.lon
-    )
-    # location = order_locations.get(order_id)
-
-    # if location:
-    #     lat, lon = location
-    #     loc_msg = await bot.send_location(
-    #         chat_id=chat_id,
-    #         latitude=lat,
-    #         longitude=lon
-    #     )
-
-    #     # yana mappingni yangilaymiz
-    #     location_messages[order_id] = loc_msg.message_id
-
-    # # ✅ BELGI
-    # data["resent"] = True
+            longitude=order.lon,
+        )
+        await update(Order, {"uid": order_uid}, {
+            "location_message_id": location_msg.message_id,
+        })
 
 
-
-# =============TAXI javoblari===============
-# HA==========
 async def driver_yes(callback: CallbackQuery):
-    order_id = callback.data.replace("driver_yes_", "")
+    driver_lang = await _lang_for(callback.from_user.id)
+    order_uid = _order_uuid(callback.data.replace("driver_yes_", ""))
+    if not order_uid:
+        await callback.answer(t(driver_lang, "order.not_found"), show_alert=True)
+        return
+
+    order = await get_order(order_uid)
+    if not order:
+        await callback.answer(t(driver_lang, "order.not_found"), show_alert=True)
+        return
+    if str(order.driver_id) != str(callback.from_user.id):
+        await callback.answer(t(driver_lang, "order.not_found"), show_alert=True)
+        return
 
     await callback.message.edit_reply_markup(reply_markup=None)
+    await callback.message.answer(t(driver_lang, "order.driver_success"))
 
-    await callback.message.answer(
-        "😊 Kelishuvingiz muvaffaqiyatli bo‘lganidan xursandmiz."
-    )
-
-    # endi userga savol yuboramiz
-    order = await get_order(order_id)
-    passenger_id = order["passenger_id"]
-
-    passenger_keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [
-            InlineKeyboardButton(text="Ha", callback_data=f"passenger_yes_{order_id}"),
-            InlineKeyboardButton(text="Yo'q", callback_data=f"passenger_no_{order_id}")
-        ]
-    ])
-
+    passenger_lang = await _lang_for(order.user_id)
     await callback.bot.send_message(
-        chat_id=passenger_id,
-        text="Taxi bilan bog'lana oldingizmi?",
-        reply_markup=passenger_keyboard
+        chat_id=order.user_id,
+        text=t(passenger_lang, "order.passenger_contact_question"),
+        reply_markup=_yes_no_keyboard(
+            passenger_lang,
+            f"passenger_yes_{order_uid}",
+            f"passenger_no_{order_uid}",
+        ),
     )
+    await callback.answer(t(driver_lang, "order.answer_accepted"))
 
-    await callback.answer("✅ Javob qabul qilindi")
-
-# ==============YO'Q================
 
 async def driver_no(callback: CallbackQuery):
-    order_id = callback.data.replace("driver_no_", "")
+    driver_lang = await _lang_for(callback.from_user.id)
+    order_uid = _order_uuid(callback.data.replace("driver_no_", ""))
+    if not order_uid:
+        await callback.answer(t(driver_lang, "order.not_found"), show_alert=True)
+        return
+
+    order = await get_order(order_uid)
+    if not order:
+        await callback.answer(t(driver_lang, "order.not_found"), show_alert=True)
+        return
+    if str(order.driver_id) != str(callback.from_user.id):
+        await callback.answer(t(driver_lang, "order.not_found"), show_alert=True)
+        return
 
     await callback.message.edit_reply_markup(reply_markup=None)
+    await callback.message.answer(t(driver_lang, "order.driver_failed"))
 
-    await callback.message.answer(
-        "❌ Kelisha olmaganingizdan afsusdamiz. Buyurtma bekor qilinadi."
-    )
-
-    order = await get_order(order_id)
-    passenger_id = order["passenger_id"]
-
-    # userga xabar
+    passenger_lang = await _lang_for(order.user_id)
     await callback.bot.send_message(
-        chat_id=passenger_id,
-        text="🚕 Taxi siz bilan kelisha olmadi. So‘rovingiz guruhga qayta yuborildi."
+        chat_id=order.user_id,
+        text=t(passenger_lang, "order.driver_failed_passenger"),
     )
 
-    # guruhga qayta yuborish
-    await resend_order_to_group(callback.bot, order_id)
+    await resend_order_to_group(callback.bot, str(order_uid))
+    await callback.answer(t(driver_lang, "order.answer_accepted"))
 
-    await update(Order, {"uid": order_id}, {
-        "status": "cancelled"
-    })
 
-    await callback.answer("✅ Javob qabul qilindi")
-
-# ========================USER javoblari=============
-# HA================
 async def passenger_yes(callback: CallbackQuery):
-    order_id = callback.data.replace("passenger_yes_", "")
+    lang = await _lang_for(callback.from_user.id)
+    order_uid = _order_uuid(callback.data.replace("passenger_yes_", ""))
+    if not order_uid:
+        await callback.answer(t(lang, "order.not_found"), show_alert=True)
+        return
+
+    order = await get_order(order_uid)
+    if not order or str(order.user_id) != str(callback.from_user.id):
+        await callback.answer(t(lang, "order.not_found"), show_alert=True)
+        return
 
     await callback.message.edit_reply_markup(reply_markup=None)
+    await callback.message.answer(t(lang, "order.passenger_success"))
+    await update(Order, {"uid": order_uid}, {"status": "completed"})
+    await callback.answer(t(lang, "order.answer_accepted"))
 
-    await callback.message.answer(
-        "🎉 Kelisha olganingizdan xursandmiz!"
-    )
-
-    await update(Order, {"uid": order_id}, {
-        "status": "cancelled"
-    })
-
-    await callback.answer("✅ Javob qabul qilindi")
-
-
-#  ========YO'Q======================
 
 async def passenger_no(callback: CallbackQuery):
-    order_id = callback.data.replace("passenger_no_", "")
+    lang = await _lang_for(callback.from_user.id)
+    order_uid = _order_uuid(callback.data.replace("passenger_no_", ""))
+    if not order_uid:
+        await callback.answer(t(lang, "order.not_found"), show_alert=True)
+        return
+
+    order = await get_order(order_uid)
+    if not order or str(order.user_id) != str(callback.from_user.id):
+        await callback.answer(t(lang, "order.not_found"), show_alert=True)
+        return
 
     await callback.message.edit_reply_markup(reply_markup=None)
+    await callback.message.answer(t(lang, "order.passenger_failed"))
 
-    await callback.message.answer(
-        "❌ Kelisha olmaganingizdan afsusdamiz. So‘rovingiz qayta guruhga yuboriladi."
-    )
+    if order.driver_id:
+        driver_lang = await _lang_for(order.driver_id)
+        await callback.bot.send_message(
+            chat_id=order.driver_id,
+            text=t(driver_lang, "order.passenger_cancelled_driver"),
+        )
 
-    order = await get_order(order_id)
-    driver_id = order["driver_id"]
-
-    # taxiga xabar
-    await callback.bot.send_message(
-        chat_id=driver_id,
-        text="🚫 Yo‘lovchi buyurtmani bekor qildi."
-    )
-
-    # guruhga qayta yuborish
-    await resend_order_to_group(callback.bot, order_id)
-
-    await update(Order, {"uid": order_id}, {
-        "status": "cancelled"
-    })
-
-    await callback.answer("✅ Javob qabul qilindi")
- 
+    await resend_order_to_group(callback.bot, str(order_uid))
+    await callback.answer(t(lang, "order.answer_accepted"))

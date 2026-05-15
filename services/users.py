@@ -1,7 +1,7 @@
 from data.models import User
 from data.models import engine
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select,update
+from sqlalchemy import select, update
 from datetime import datetime, timezone
 
 class UserService:
@@ -10,7 +10,10 @@ class UserService:
         async with AsyncSession(engine) as session:
             
             result = await session.execute(
-                select(User).where(User.telegram_id == telegram_id)
+                select(User)
+                .where(User.telegram_id == telegram_id)
+                .order_by(User.id.desc())
+                .limit(1)
             )
             user = result.scalar_one_or_none()
 
@@ -18,7 +21,14 @@ class UserService:
         
     @staticmethod
     async def create_user(user_data : dict):
+        existing_user = await UserService.get_user_by_telegram_id(
+            telegram_id=str(user_data.get("telegram_id"))
+        )
+        if existing_user:
+            return existing_user
+
         async with AsyncSession(engine) as session:
+            user_data.setdefault("language", "uz")
             new_user = User(
                 **user_data
             )
@@ -40,4 +50,38 @@ class UserService:
                 )
             )
             await session.commit()
+
+    @staticmethod
+    async def get_user_language(telegram_id: str) -> str:
+        user = await UserService.get_user_by_telegram_id(telegram_id=telegram_id)
+        return user.language if user and user.language else "uz"
+
+    @staticmethod
+    async def update_user_language(telegram_id: str, language: str):
+        if language not in {"uz", "ru", "en"}:
+            language = "uz"
+
+        async with AsyncSession(engine) as session:
+            result = await session.execute(
+                select(User)
+                .where(User.telegram_id == telegram_id)
+                .order_by(User.id.desc())
+                .limit(1)
+            )
+            user = result.scalar_one_or_none()
+
+            if user:
+                user.language = language
+                user.last_used_at = datetime.now(timezone.utc)
+            else:
+                user = User(
+                    telegram_id=telegram_id,
+                    language=language,
+                    last_used_at=datetime.now(timezone.utc),
+                )
+                session.add(user)
+
+            await session.commit()
+            await session.refresh(user)
+            return user
     

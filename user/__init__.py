@@ -28,6 +28,7 @@ from .functions import (
                         edit_phone_save,
                         edit_location_save,
                         edit_people_save,
+                        edit_place_back_message,
                          edit_place1_callback,
                         edit_place2_callback,
 )
@@ -53,18 +54,28 @@ from taxi.states import taxi_states
 from aiogram.filters import StateFilter
 
 from .filters import (
+    LocationFilter,
     PhoneFilter,
     PeopleCountFilter,
 )
+from user.i18n import t
 
 router = Router()
+
+SEND_BUTTONS = {t(lang, "button.send") for lang in ("uz", "ru", "en")}
+EDIT_BUTTONS = {t(lang, "button.edit") for lang in ("uz", "ru", "en")}
+CANCEL_BUTTONS = {t(lang, "button.cancel") for lang in ("uz", "ru", "en")}
+BACK_BUTTONS = {t(lang, "button.back") for lang in ("uz", "ru", "en")}
+TRAVEL_BUTTONS = {t(lang, "passenger.travel") for lang in ("uz", "ru", "en")}
+CHANNEL_BUTTONS = {t(lang, "passenger.channel") for lang in ("uz", "ru", "en")}
+COMPLAINT_BUTTONS = {t(lang, "passenger.complaints") for lang in ("uz", "ru", "en")}
 
 # ======================
 # COMMAND LAR
 router.message.register(language_command, Command("language"))
-router.callback_query.register(language_callback, F.data.in_(["lang_uz", "lang_ru"]))
+router.callback_query.register(language_callback, F.data.in_(["lang_uz", "lang_ru", "lang_en"]))
 router.message.register(passenger_start, F.text.in_(["👤 Yo'lovchi", "👤 Passenger"]))
-router.message.register(travel_start, F.text.in_(["🚖 E’lon yaratish", "Поездка"]))
+router.message.register(travel_start, F.text.in_(TRAVEL_BUTTONS))
 router.message.register(process_firstname, StateFilter(user_states.user_firstname))
 router.message.register(process_lastname, StateFilter(user_states.user_lastname))
 router.message.register(
@@ -73,14 +84,14 @@ router.message.register(
     PhoneFilter()
 )
 
-router.callback_query.register(process_place1, lambda c: c.data.startswith("place1_"), StateFilter(user_states.user_place1))
-router.callback_query.register(process_place2, lambda c: c.data.startswith("place2_"), StateFilter(user_states.user_place2))
-router.message.register(process_location, StateFilter(user_states.user_location))
-router.message.register(process_location, StateFilter(user_states.user_confirm))
+router.callback_query.register(process_place1, lambda c: c.data.startswith("place1_") or c.data == "place_back", StateFilter(user_states.user_place1))
+router.callback_query.register(process_place2, lambda c: c.data.startswith("place2_") or c.data == "place_back", StateFilter(user_states.user_place2))
+router.message.register(process_location, StateFilter(user_states.user_location), LocationFilter())
+router.message.register(process_location, StateFilter(user_states.user_confirm), LocationFilter())
 router.message.register(process_people,StateFilter(user_states.user_people),PeopleCountFilter())
-router.message.register(confirm_send, StateFilter(user_states.confirm_order), F.text == "✅ Yuborish")
-router.message.register(show_edit_menu, StateFilter(user_states.confirm_order), F.text == "✏️ Tahrirlash")
-router.message.register(cancel_order, StateFilter(user_states.confirm_order), F.text == "❌ Bekor qilish")
+router.message.register(confirm_send, StateFilter(user_states.confirm_order), F.text.in_(SEND_BUTTONS))
+router.message.register(show_edit_menu, StateFilter(user_states.confirm_order), F.text.in_(EDIT_BUTTONS))
+router.message.register(cancel_order, StateFilter(user_states.confirm_order), F.text.in_(CANCEL_BUTTONS))
 router.message.register(choose_edit_field, StateFilter(user_states.edit_field))
 router.callback_query.register(accept_order, F.data.startswith("accept_"))
 router.callback_query.register(passenger_yes, F.data.startswith("passenger_yes_"))
@@ -91,16 +102,18 @@ router.callback_query.register(confirm_order, F.data.startswith("confirm_"))
 router.callback_query.register(client_yes, F.data.startswith("client_yes_"))
 router.callback_query.register(client_no, F.data.startswith("client_no_"))
 
-router.message.register(channel_handler, F.text == "📢 Kanalga o'tish")
-router.message.register(complaints_start, user_states.choose_option, lambda msg: msg.text == "Shikoyatlar va takliflar")
-router.message.register(back_to_choose_option, user_states.complaint_text, F.text == "◀️ Orqaga")
+router.message.register(channel_handler, F.text.in_(CHANNEL_BUTTONS))
+router.message.register(complaints_start, user_states.choose_option, F.text.in_(COMPLAINT_BUTTONS))
+router.message.register(back_to_choose_option, user_states.complaint_text, F.text.in_(BACK_BUTTONS))
 router.message.register(complaints_handler, StateFilter(user_states.complaint_text))
-router.message.register(check_cancel, F.text == "❌ Bekor qilish")
+router.message.register(check_cancel, F.text.in_(CANCEL_BUTTONS))
 router.message.register(choose_edit_field, StateFilter(user_states.edit_field))
 router.message.register(edit_firstname_save, StateFilter(user_states.editing_firstname))
 router.message.register(edit_lastname_save, StateFilter(user_states.editing_lastname))
 router.message.register(edit_phone_save, StateFilter(user_states.editing_phone))
+router.message.register(edit_place_back_message, StateFilter(user_states.editing_place1), F.text.in_({t(lang, "button.back") for lang in ("uz", "ru", "en")}))
+router.message.register(edit_place_back_message, StateFilter(user_states.editing_place2), F.text.in_({t(lang, "button.back") for lang in ("uz", "ru", "en")}))
 router.message.register(edit_location_save, StateFilter(user_states.editing_location))
 router.message.register(edit_people_save, StateFilter(user_states.editing_people))
-router.callback_query.register(edit_place1_callback, lambda c: c.data.startswith("place1_"), StateFilter(user_states.editing_place1))
-router.callback_query.register(edit_place2_callback, lambda c: c.data.startswith("place2_"), StateFilter(user_states.editing_place2))
+router.callback_query.register(edit_place1_callback, lambda c: c.data.startswith("place1_") or c.data == "place_back", StateFilter(user_states.editing_place1))
+router.callback_query.register(edit_place2_callback, lambda c: c.data.startswith("place2_") or c.data == "place_back", StateFilter(user_states.editing_place2))

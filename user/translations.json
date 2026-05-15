@@ -1,99 +1,642 @@
 {
+  "start.welcome": {
+    "uz": "Botimizga xush kelibsiz",
+    "ru": "Добро пожаловать в наш бот",
+    "en": "Welcome to our bot"
+  },
+  "role.choose": {
+    "uz": "Rolingizni tanlang!",
+    "ru": "Выберите вашу роль!",
+    "en": "Choose your role!"
+  },
+  "role.invalid": {
+    "uz": "Klaviaturadagi tugmalardan birini tanlang",
+    "ru": "Выберите одну из кнопок на клавиатуре",
+    "en": "Choose one of the keyboard buttons"
+  },
+  "role.selected": {
+    "uz": "Sizning rolingiz {role}!",
+    "ru": "Ваша роль: {role}!",
+    "en": "Your role: {role}!"
+  },
+  "passenger.hello": {
+    "uz": "Salom yo'lovchi 👋",
+    "ru": "Здравствуйте, пассажир 👋",
+    "en": "Hello, passenger 👋"
+  },
+  "hello": {
+    "uz": "Salom",
+    "ru": "Здравствуйте",
+    "en": "Hello"
+  },
+  "button.send": {
+    "uz": "✅ Yuborish",
+    "ru": "✅ Отправить",
+    "en": "✅ Send"
+  },
+  "button.edit": {
+    "uz": "✏️ Tahrirlash",
+    "ru": "✏️ Изменить",
+    "en": "✏️ Edit"
+  },
+  "button.cancel": {
+    "uz": "❌ Bekor qilish",
+    "ru": "❌ Отменить",
+    "en": "❌ Cancel"
+  },
+  "button.back": {
+    "uz": "◀️ Orqaga",
+    "ru": "◀️ Назад",
+    "en": "◀️ Back"
+  },
+  "button.send_phone": {
+    "uz": "📱 Telefon raqamini yuborish",
+    "ru": "📱 Отправить номер телефона",
+    "en": "📱 Send phone number"
+  },
+  "button.send_location": {
+    "uz": "📍 Lokatsiyani yuborish",
+    "ru": "📍 Отправить локацию",
+    "en": "📍 Send location"
+  },
+  "button.confirm": {
+    "uz": "Tasdiqlash",
+    "ru": "Подтвердить",
+    "en": "Confirm"
+  },
+  "button.sign_up": {
+    "uz": "Ro'yxatdan o'tish",
+    "ru": "Зарегистрироваться",
+    "en": "Sign up"
+  },
+  "field.firstname": {
+    "uz": "Ism",
+    "ru": "Имя",
+    "en": "First name"
+  },
+  "field.lastname": {
+    "uz": "Familiya",
+    "ru": "Фамилия",
+    "en": "Last name"
+  },
+  "field.phone": {
+    "uz": "Telefon",
+    "ru": "Телефон",
+    "en": "Phone"
+  },
+  "field.from": {
+    "uz": "Qayerdan",
+    "ru": "Откуда",
+    "en": "From"
+  },
+  "field.to": {
+    "uz": "Qayerga",
+    "ru": "Куда",
+    "en": "To"
+  },
+  "field.location": {
+    "uz": "Lokatsiya",
+    "ru": "Локация",
+    "en": "Location"
+  },
+  "field.people": {
+    "uz": "Odamlar soni",
+    "ru": "Количество людей",
+    "en": "People"
+  },
+  "field.car_model": {
+    "uz": "Mashina modeli",
+    "ru": "Модель машины",
+    "en": "Car model"
+  },
+  "field.car_number": {
+    "uz": "Mashina raqami",
+    "ru": "Номер машины",
+    "en": "Car number"
+  },
+  "taxi.button.info": {
+    "uz": "📄 Ma'lumot",
+    "ru": "📄 Информация",
+    "en": "📄 Info"
+  },
+  "taxi.button.edit_info": {
+    "uz": "📝 Ma'lumotlarni o'zgartirish",
+    "ru": "📝 Изменить данные",
+    "en": "📝 Edit info"
+  },
+  "taxi.not_registered": {
+    "uz": "Haydovchi, siz hali ro'yxatdan o'tmagansiz!\nIltimos, ro'yxatdan o'ting!",
+    "ru": "Водитель, вы ещё не зарегистрированы!\nПожалуйста, зарегистрируйтесь!",
+    "en": "Driver, you are not registered yet!\nPlease sign up!"
+  },
+  "taxi.saved": {
+    "uz": "Barcha ma'lumotlaringiz saqlandi ✅!",
+    "ru": "Все ваши данные сохранены ✅!",
+    "en": "Your information has been saved ✅!"
+  },
+  "profile.info": {
+    "uz": "Profil ma'lumotlari",
+    "ru": "Информация профиля",
+    "en": "Profile information"
+  },
+  "profile.updated": {
+    "uz": "Ma'lumot yangilandi ✅",
+    "ru": "Данные обновлены ✅",
+    "en": "Information updated ✅"
+  },
+  "back.to_menu": {
+    "uz": "Asosiy menyuga qaytildi.",
+    "ru": "Возврат в главное меню.",
+    "en": "Returned to the main menu."
+  },
+  "phone.accepted": {
+    "uz": "Telefon raqamingiz qabul qilindi ✅",
+    "ru": "Номер телефона принят ✅",
+    "en": "Phone number accepted ✅"
+  },
+  "error.location_required": {
+    "uz": "📍 Iltimos lokatsiyani tugma orqali yuboring!",
+    "ru": "📍 Пожалуйста, отправьте локацию кнопкой!",
+    "en": "📍 Please send location using the button!"
+  },
+  "error.number_required": {
+    "uz": "❌ Iltimos, faqat raqam kiriting!\nMasalan: 5",
+    "ru": "❌ Пожалуйста, введите только число!\nНапример: 5",
+    "en": "❌ Please enter only a number!\nExample: 5"
+  },
+  "error.people_range": {
+    "uz": "❌ Odamlar soni 1 dan 20 gacha bo'lishi kerak.\nNamuna: 4",
+    "ru": "❌ Количество людей должно быть от 1 до 20.\nПример: 4",
+    "en": "❌ People count must be from 1 to 20.\nExample: 4"
+  },
+  "order.cancelled": {
+    "uz": "❌ Bekor qilindi",
+    "ru": "❌ Отменено",
+    "en": "❌ Cancelled"
+  },
+  "profile.menu": {
+    "uz": "Asosiy menyu",
+    "ru": "Главное меню",
+    "en": "Main menu"
+  },
+  "profile.edit_menu": {
+    "uz": "Ma'lumotlaringizni o'zgartirishingiz mumkin",
+    "ru": "Вы можете изменить свои данные",
+    "en": "You can edit your information"
+  },
+  "taxi.input.firstname": {
+    "uz": "Iltimos ismingizni kiriting!",
+    "ru": "Пожалуйста, введите ваше имя!",
+    "en": "Please enter your first name!"
+  },
+  "taxi.input.lastname": {
+    "uz": "Iltimos familiyangizni kiriting!",
+    "ru": "Пожалуйста, введите вашу фамилию!",
+    "en": "Please enter your last name!"
+  },
+  "taxi.input.phone": {
+    "uz": "Iltimos, kontaktni yuboring yoki telefon raqamingizni kiriting.",
+    "ru": "Пожалуйста, отправьте контакт или введите номер телефона.",
+    "en": "Please send your contact or enter your phone number."
+  },
+  "taxi.input.car_model": {
+    "uz": "Iltimos, mashinangiz modelini kiriting!",
+    "ru": "Пожалуйста, введите модель машины!",
+    "en": "Please enter your car model!"
+  },
+  "taxi.input.car_number": {
+    "uz": "Iltimos, mashinangiz raqamini kiriting!",
+    "ru": "Пожалуйста, введите номер машины!",
+    "en": "Please enter your car plate number!"
+  },
+  "taxi.confirm": {
+    "uz": "Iltimos, barcha ma'lumotlaringiz to'g'ri ekanligini tekshiring va tasdiqlang!",
+    "ru": "Пожалуйста, проверьте данные и подтвердите!",
+    "en": "Please check your information and confirm!"
+  },
+  "taxi.edit.firstname": {
+    "uz": "Yangi ismingizni kiriting:",
+    "ru": "Введите новое имя:",
+    "en": "Enter your new first name:"
+  },
+  "taxi.edit.lastname": {
+    "uz": "Yangi familiyangizni kiriting:",
+    "ru": "Введите новую фамилию:",
+    "en": "Enter your new last name:"
+  },
+  "taxi.edit.phone": {
+    "uz": "Yangi telefon raqamingizni kiriting:",
+    "ru": "Введите новый номер телефона:",
+    "en": "Enter your new phone number:"
+  },
+  "taxi.edit.car_model": {
+    "uz": "Yangi mashina modelini kiriting:",
+    "ru": "Введите новую модель машины:",
+    "en": "Enter your new car model:"
+  },
+  "taxi.edit.car_number": {
+    "uz": "Yangi mashina raqamini kiriting:",
+    "ru": "Введите новый номер машины:",
+    "en": "Enter your new car plate number:"
+  },
+  "edit.choose_field": {
+    "uz": "Qaysi ma'lumotni o'zgartirmoqchisiz?",
+    "ru": "Какие данные хотите изменить?",
+    "en": "Which information do you want to edit?"
+  },
+  "edit.firstname": {
+    "uz": "Yangi ismingizni kiriting:",
+    "ru": "Введите новое имя:",
+    "en": "Enter your new first name:"
+  },
+  "edit.lastname": {
+    "uz": "Yangi familiyangizni kiriting:",
+    "ru": "Введите новую фамилию:",
+    "en": "Enter your new last name:"
+  },
+  "edit.phone": {
+    "uz": "Yangi telefon raqamingizni kiriting:",
+    "ru": "Введите новый номер телефона:",
+    "en": "Enter your new phone number:"
+  },
+  "edit.place1": {
+    "uz": "Jo'nash viloyatini tanlang:",
+    "ru": "Выберите область отправления:",
+    "en": "Choose departure region:"
+  },
+  "edit.place2": {
+    "uz": "Borish viloyatini tanlang:",
+    "ru": "Выберите область назначения:",
+    "en": "Choose destination region:"
+  },
+  "edit.location": {
+    "uz": "Yangi lokatsiyangizni yuboring:",
+    "ru": "Отправьте новую локацию:",
+    "en": "Send your new location:"
+  },
+  "edit.people": {
+    "uz": "Yangi odamlar sonini kiriting:",
+    "ru": "Введите новое количество людей:",
+    "en": "Enter the new number of people:"
+  },
+  "edit.current": {
+    "uz": "Hozirgi",
+    "ru": "Текущее значение",
+    "en": "Current"
+  },
+  "edit.example": {
+    "uz": "Namuna",
+    "ru": "Пример",
+    "en": "Example"
+  },
+  "error.firstname_required": {
+    "uz": "❌ Ism kiritilmadi. Qaytadan kiriting:",
+    "ru": "❌ Имя не введено. Введите ещё раз:",
+    "en": "❌ First name was not entered. Try again:"
+  },
+  "error.lastname_required": {
+    "uz": "❌ Familiya kiritilmadi. Qaytadan kiriting:",
+    "ru": "❌ Фамилия не введена. Введите ещё раз:",
+    "en": "❌ Last name was not entered. Try again:"
+  },
+  "error.phone_invalid": {
+    "uz": "❌ Telefon raqam noto'g'ri. Namuna: +998901234567 yoki 901234567",
+    "ru": "❌ Неверный номер телефона. Пример: +998901234567 или 901234567",
+    "en": "❌ Invalid phone number. Example: +998901234567 or 901234567"
+  },
+  "location.exists": {
+    "uz": "📍 Lokatsiya bor",
+    "ru": "📍 Локация есть",
+    "en": "📍 Location exists"
+  },
+  "location.missing": {
+    "uz": "❌ Lokatsiya yo'q",
+    "ru": "❌ Локации нет",
+    "en": "❌ No location"
+  },
+  "complaint.prompt": {
+    "uz": "Shikoyat va takliflaringizni yuborishingiz mumkin.",
+    "ru": "Можете отправить жалобу или предложение.",
+    "en": "You can send a complaint or suggestion."
+  },
+  "complaint.accepted": {
+    "uz": "✅ Xabaringiz qabul qilindi. Rahmat!",
+    "ru": "✅ Ваше сообщение принято. Спасибо!",
+    "en": "✅ Your message has been received. Thank you!"
+  },
+  "channel.link": {
+    "uz": "📢 Shu link orqali kanalga o'tishingiz mumkin:",
+    "ru": "📢 Вы можете перейти в канал по этой ссылке:",
+    "en": "📢 You can open the channel using this link:"
+  },
+  "summary.title": {
+    "uz": "✅ Sizning so'rovingiz!",
+    "ru": "✅ Ваша заявка!",
+    "en": "✅ Your request!"
+  },
+  "summary.firstname": {
+    "uz": "Ism",
+    "ru": "Имя",
+    "en": "First name"
+  },
+  "summary.lastname": {
+    "uz": "Familiya",
+    "ru": "Фамилия",
+    "en": "Last name"
+  },
+  "summary.phone": {
+    "uz": "Telefon",
+    "ru": "Телефон",
+    "en": "Phone"
+  },
+  "summary.from": {
+    "uz": "Qayerdan",
+    "ru": "Откуда",
+    "en": "From"
+  },
+  "summary.to": {
+    "uz": "Qayerga",
+    "ru": "Куда",
+    "en": "To"
+  },
+  "summary.people": {
+    "uz": "Odamlar soni",
+    "ru": "Количество людей",
+    "en": "People"
+  },
   "language.choose": {
     "uz": "Tilni tanlang",
-    "ru": "Выберите язык"
+    "ru": "Выберите язык",
+    "en": "Choose a language"
   },
   "language.changed.uz": {
-    "uz": "Til o‘zgartirildi 🇺🇿",
-    "ru": "Язык изменён 🇺🇿"
+    "uz": "Til o'zgartirildi 🇺🇿",
+    "ru": "Язык изменён 🇺🇿",
+    "en": "Language changed 🇺🇿"
   },
   "language.changed.ru": {
-    "uz": "Til o‘zgartirildi 🇷🇺",
-    "ru": "Язык изменён 🇷🇺"
+    "uz": "Til o'zgartirildi 🇷🇺",
+    "ru": "Язык изменён 🇷🇺",
+    "en": "Language changed 🇷🇺"
   },
-
+  "language.changed.en": {
+    "uz": "Til o'zgartirildi 🇬🇧",
+    "ru": "Язык изменён 🇬🇧",
+    "en": "Language changed 🇬🇧"
+  },
   "role.passenger": {
     "uz": "👤 Yo'lovchi",
-    "ru": "👤 Пассажир"
+    "ru": "👤 Пассажир",
+    "en": "👤 Passenger"
   },
   "role.driver": {
     "uz": "🚖 Haydovchi",
-    "ru": "🚖 Водитель"
+    "ru": "🚖 Водитель",
+    "en": "🚖 Driver"
   },
-
-  "choose.option":{
-    "uz": "Quyidagi bo‘limlardan birini tanlang:",
-    "ru": "vgsfb"
+  "choose.option": {
+    "uz": "Quyidagi bo'limlardan birini tanlang:",
+    "ru": "Выберите один из разделов:",
+    "en": "Choose one of the sections:"
   },
-
   "passenger.travel": {
-    "uz": "🚖 E’lon yaratish", 
-    "ru": "🚖 E’lon yaratish"},
-
+    "uz": "🚖 E'lon yaratish",
+    "ru": "🚖 Создать объявление",
+    "en": "🚖 Create request"
+  },
+  "passenger.channel": {
+    "uz": "📢 Kanalga o'tish",
+    "ru": "📢 Перейти в канал",
+    "en": "📢 Open channel"
+  },
   "passenger.my_requests": {
-    "uz": "Mening so'rovlarim", 
-    "ru": "Мои запросы"},
-
+    "uz": "Mening so'rovlarim",
+    "ru": "Мои запросы",
+    "en": "My requests"
+  },
   "passenger.complaints": {
-    "uz": "Shikoyatlar va takliflar", 
-    "ru": "Жалобы и предложения"},
-
+    "uz": "Shikoyatlar va takliflar",
+    "ru": "Жалобы и предложения",
+    "en": "Complaints and suggestions"
+  },
   "back": {
-    "uz": "Orqaga qaytish", 
-    "ru": "Назад"},
-
+    "uz": "Orqaga qaytish",
+    "ru": "Назад",
+    "en": "Back"
+  },
   "input.name": {
     "uz": "Ismingizni kiriting",
-    "ru": "Введите ваше имя"
+    "ru": "Введите ваше имя",
+    "en": "Enter your first name"
   },
   "input.surname": {
     "uz": "Familiyangizni kiriting",
-    "ru": "Введите вашу фамилию"
+    "ru": "Введите вашу фамилию",
+    "en": "Enter your last name"
   },
   "input.phone": {
     "uz": "Raqamingizni kiriting",
-    "ru": "Введите ваш номер телефона"
+    "ru": "Введите ваш номер телефона",
+    "en": "Enter your phone number"
   },
   "input.from": {
     "uz": "Qayerdan",
-    "ru": "Откуда"
+    "ru": "Откуда",
+    "en": "From"
   },
   "input.to": {
     "uz": "Qayerga",
-    "ru": "Куда"
+    "ru": "Куда",
+    "en": "To"
   },
   "input.location": {
     "uz": "Iltimos, lokatsiyangizni tashlang",
-    "ru": "Пожалуйста, отправьте вашу локацию"
-  },
-  "input.datetime": {
-    "uz": "Qachon ketmoqchisiz? Sana va soatini kiriting",
-    "ru": "Когда вы собираетесь ехать? Введите дату и время"
+    "ru": "Пожалуйста, отправьте вашу локацию",
+    "en": "Please send your location"
   },
   "input.people_count": {
     "uz": "Nechta odam ketadi?",
-    "ru": "Сколько человек поедет?"
+    "ru": "Сколько человек поедет?",
+    "en": "How many people are going?"
   },
-
   "request.show": {
-    "uz": "So'rovni ko‘rsatish",
-    "ru": "Показать заявку"
+    "uz": "So'rovni ko'rsatish",
+    "ru": "Показать заявку",
+    "en": "Show request"
   },
   "request.clear": {
     "uz": "So'rovni tozalash",
-    "ru": "Очистить заявку"
+    "ru": "Очистить заявку",
+    "en": "Clear request"
   },
-
   "navigation.next": {
     "uz": "Keyingi",
-    "ru": "Следующая"
+    "ru": "Следующая",
+    "en": "Next"
   },
   "navigation.previous": {
     "uz": "Oldingi",
-    "ru": "Предыдущая"
+    "ru": "Предыдущая",
+    "en": "Previous"
   },
   "navigation.back": {
     "uz": "Orqaga qaytish",
-    "ru": "Назад"
+    "ru": "Назад",
+    "en": "Back"
+  },
+  "button.yes": {
+    "uz": "Ha",
+    "ru": "Да",
+    "en": "Yes"
+  },
+  "button.no": {
+    "uz": "Yo'q",
+    "ru": "Нет",
+    "en": "No"
+  },
+  "field.driver": {
+    "uz": "Taxi",
+    "ru": "Такси",
+    "en": "Taxi"
+  },
+  "error.same_region": {
+    "uz": "❌ Manzillar bir xil bo'lishi mumkin emas!",
+    "ru": "❌ Адреса не могут быть одинаковыми!",
+    "en": "❌ Departure and destination cannot be the same!"
+  },
+  "order.driver_only": {
+    "uz": "❌ Bu tugmani faqat haydovchilar bosishi mumkin!",
+    "ru": "❌ Эту кнопку могут нажимать только водители!",
+    "en": "❌ Only drivers can press this button!"
+  },
+  "order.self_accept": {
+    "uz": "❌ Siz o'zingiz yaratgan buyurtmani qabul qila olmaysiz!",
+    "ru": "❌ Вы не можете принять свою заявку!",
+    "en": "❌ You cannot accept your own request!"
+  },
+  "order.not_found": {
+    "uz": "❌ Buyurtma topilmadi!",
+    "ru": "❌ Заказ не найден!",
+    "en": "❌ Order not found!"
+  },
+  "order.already_accepted": {
+    "uz": "❌ Bu buyurtma allaqachon qabul qilingan.",
+    "ru": "❌ Этот заказ уже принят.",
+    "en": "❌ This order has already been accepted."
+  },
+  "order.telegram_button": {
+    "uz": "💬 Telegramda yozish",
+    "ru": "💬 Написать в Telegram",
+    "en": "💬 Message on Telegram"
+  },
+  "order.confirm_button": {
+    "uz": "✅ Buyurtmani tasdiqlash",
+    "ru": "✅ Подтвердить заказ",
+    "en": "✅ Confirm order"
+  },
+  "order.accepted_driver": {
+    "uz": "🚖 Siz buyurtmani qabul qildingiz!",
+    "ru": "🚖 Вы приняли заказ!",
+    "en": "🚖 You accepted the order!"
+  },
+  "order.confirm_instruction": {
+    "uz": "Yo'lovchi bilan bog'langaningizdan keyin Buyurtmani tasdiqlash tugmasini bosing.",
+    "ru": "После связи с пассажиром нажмите кнопку подтверждения заказа.",
+    "en": "After contacting the passenger, press the confirm order button."
+  },
+  "order.passenger_review": {
+    "uz": "🚕 Sizning so'rovingiz taxi tomonidan ko'rib chiqilmoqda",
+    "ru": "🚕 Ваша заявка рассматривается таксистом",
+    "en": "🚕 Your request is being reviewed by a taxi driver"
+  },
+  "order.accepted_alert": {
+    "uz": "✅ Buyurtma qabul qilindi!",
+    "ru": "✅ Заказ принят!",
+    "en": "✅ Order accepted!"
+  },
+  "order.contact_prompt": {
+    "uz": "📞 Yo'lovchi bilan bog'lanish uchun tugmani bosing.",
+    "ru": "📞 Нажмите кнопку, чтобы связаться с пассажиром.",
+    "en": "📞 Press the button to contact the passenger."
+  },
+  "order.private_sent": {
+    "uz": "✅ Sizga shaxsiy xabar yuborildi.",
+    "ru": "✅ Личное сообщение отправлено.",
+    "en": "✅ A private message has been sent to you."
+  },
+  "order.contact_question": {
+    "uz": "🚕 Taxi siz bilan bog'landimi?",
+    "ru": "🚕 Таксист связался с вами?",
+    "en": "🚕 Did the taxi driver contact you?"
+  },
+  "order.request_sent": {
+    "uz": "So'rov yuborildi ✅",
+    "ru": "Запрос отправлен ✅",
+    "en": "Request sent ✅"
+  },
+  "order.client_happy": {
+    "uz": "😊 Bundan xursandmiz!\n\nYaxshi yo'l tilaymiz 🚕",
+    "ru": "😊 Мы рады!\n\nЖелаем хорошей дороги 🚕",
+    "en": "😊 We are glad!\n\nHave a good trip 🚕"
+  },
+  "order.driver_contact_passenger": {
+    "uz": "⚠️ Siz hali yo'lovchi bilan bog'lanmagansiz!\n\nIltimos yo'lovchi bilan bog'laning.",
+    "ru": "⚠️ Вы ещё не связались с пассажиром!\n\nПожалуйста, свяжитесь с ним.",
+    "en": "⚠️ You have not contacted the passenger yet!\n\nPlease contact the passenger."
+  },
+  "order.passenger_not_contacted": {
+    "uz": "❗ Taxi hali siz bilan bog'lanmadi.",
+    "ru": "❗ Таксист ещё не связался с вами.",
+    "en": "❗ The taxi driver has not contacted you yet."
+  },
+  "order.followup_driver_question": {
+    "uz": "Yo'lovchi bilan bog'lana oldingizmi?",
+    "ru": "Вы смогли связаться с пассажиром?",
+    "en": "Were you able to contact the passenger?"
+  },
+  "order.driver_success": {
+    "uz": "😊 Kelishuvingiz muvaffaqiyatli bo'lganidan xursandmiz.",
+    "ru": "😊 Рады, что вы успешно договорились.",
+    "en": "😊 We are glad your agreement was successful."
+  },
+  "order.passenger_contact_question": {
+    "uz": "Taxi bilan bog'lana oldingizmi?",
+    "ru": "Вы смогли связаться с такси?",
+    "en": "Were you able to contact the taxi driver?"
+  },
+  "order.answer_accepted": {
+    "uz": "✅ Javob qabul qilindi",
+    "ru": "✅ Ответ принят",
+    "en": "✅ Answer accepted"
+  },
+  "order.driver_failed": {
+    "uz": "❌ Kelisha olmaganingizdan afsusdamiz. Buyurtma qayta guruhga yuboriladi.",
+    "ru": "❌ Жаль, что не удалось договориться. Заказ будет отправлен в группу снова.",
+    "en": "❌ Sorry the agreement failed. The order will be sent to the group again."
+  },
+  "order.driver_failed_passenger": {
+    "uz": "🚕 Taxi siz bilan kelisha olmadi. So'rovingiz guruhga qayta yuborildi.",
+    "ru": "🚕 Таксист не смог договориться с вами. Заявка снова отправлена в группу.",
+    "en": "🚕 The taxi driver could not agree with you. Your request was sent to the group again."
+  },
+  "order.passenger_success": {
+    "uz": "🎉 Kelisha olganingizdan xursandmiz!",
+    "ru": "🎉 Рады, что вы смогли договориться!",
+    "en": "🎉 We are glad you reached an agreement!"
+  },
+  "order.passenger_failed": {
+    "uz": "❌ Kelisha olmaganingizdan afsusdamiz. So'rovingiz qayta guruhga yuboriladi.",
+    "ru": "❌ Жаль, что не удалось договориться. Заявка будет отправлена в группу снова.",
+    "en": "❌ Sorry the agreement failed. Your request will be sent to the group again."
+  },
+  "order.passenger_cancelled_driver": {
+    "uz": "🚫 Yo'lovchi buyurtmani bekor qildi.",
+    "ru": "🚫 Пассажир отменил заказ.",
+    "en": "🚫 The passenger cancelled the order."
+  },
+  "order.accept_button": {
+    "uz": "✅ Qabul qilish",
+    "ru": "✅ Принять",
+    "en": "✅ Accept"
   }
 }

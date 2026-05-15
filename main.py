@@ -54,6 +54,7 @@ async def shutdown(bot: Bot):
         logger.error(f"Shutdown message error: {e}")
 
 async def main():
+    await models.init_db()
     scheduler.start()
     dp.startup.register(startup)
     dp.shutdown.register(shutdown)
@@ -67,7 +68,8 @@ async def main():
 
     await bot.set_my_commands([
         BotCommand(command="/start", description="Botni ishga tushirish"),
-        BotCommand(command ="/change_role", description="Foydalanuvchi darajasini o'zgartirish")
+        BotCommand(command="/change_role", description="Foydalanuvchi darajasini o'zgartirish"),
+        BotCommand(command="/language", description="Tilni o'zgartirish")
     ])
 
     try:
